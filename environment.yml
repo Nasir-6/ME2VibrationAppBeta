@@ -1,0 +1,14 @@
+name: ME2VibrationsAppBeta #Env name
+
+dependencies:
+  - python=3.7
+  - pip
+  - pip:
+      - numpy
+      - dash
+      - dash-renderer
+      - dash-core-components
+      - dash-html-components
+      - plotly
+      - pandas==1.1.5   # Something up with Heroku when you use latest version!! So use 1.1.5
+      - gunicorn # for app deploymen
