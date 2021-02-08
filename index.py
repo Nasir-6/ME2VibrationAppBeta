@@ -3,22 +3,35 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from app import app
-from apps import app1, app2
+from app import server
+# Import all the diff app pages
+from apps import SDOF, ForcedVib, VibrationIsolation, BaseExcitation    #
 
 
 app.layout = html.Div([
-    dcc.Location(id='url', refresh=False),
+    html.H1("ME2 Vibrations App", className="title"),
+    html.Div([
+        dcc.Link('SDOF | ', href='/apps/SDOF'),
+        dcc.Link('Forced Vibrations', href='/apps/ForcedVib'),
+    ], className="pageLinks"),
+
+    # dcc location is the way we change pages. so
+    dcc.Location(id='url', pathname='', refresh=False),
+    # All the content of each app goes in this DIV!!!!
     html.Div(id='page-content')
 ])
 
 
+# This is to change pages
 @app.callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
 def display_page(pathname):
-    if pathname == '/apps/app1':
-        return app1.layout
-    elif pathname == '/apps/app2':
-        return app2.layout
+    if pathname == '':
+        return SDOF.layout      #Default First Page is SDOF
+    elif pathname == '/apps/SDOF':
+        return SDOF.layout
+    elif pathname == '/apps/ForcedVib':
+        return ForcedVib.layout
     else:
         return '404'
 

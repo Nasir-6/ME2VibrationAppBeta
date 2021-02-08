@@ -1,1 +1,1 @@
-web: gunicorn ME2VibrationsAppBeta:server
+web: gunicorn app:server
