@@ -58,10 +58,10 @@ line1_input = dbc.Row([
                 ],
             ), className="mb-1 col-12 col-sm-12 col-md-6"),
             dbc.Button("Submit", color="secondary", id='submit-button-state', size="sm")
-        ])
+        ]),
+        dbc.Row(html.P(id="damping_ratio")),
+        dbc.Row(html.P(id="solution_string"))
     ]),
-    # dbc.Col(,
-    #         width=1, className="align-self-end")
 
 ], className="jumbotron")
 
@@ -76,6 +76,8 @@ layout = dbc.Container([
 
 
 @app.callback(Output('sine_plot', 'figure'),
+              Output('damping_ratio', 'children'),
+              Output('solution_string', 'children'),
               Input('submit-button-state', 'n_clicks'),
               State('m', 'value'),
               State('k', 'value'),
@@ -95,32 +97,32 @@ def update_output(n_clicks, m, k, c, x0, tend, n):
 
     if dampRatio == 0:
         x = x0 * np.cos(wn * t)
-        solutionType = "Undamped Solution"
+        solutionType = "an Undamped Solution"
     elif 1 > dampRatio > 0:
-        solutionType = "Under Damped Solution"
+        solutionType = "an Under Damped Solution"
         wd = wn * np.sqrt(1 - dampRatio ** 2)
         A = x0
         B = dampRatio * A / wd
         x = np.exp(-dampRatio * wn * t) * (A * np.cos(wd * t) + B * np.sin(wd * t))
     elif dampRatio == 1:
-        solutionType = "Critically Damped Solution"
+        solutionType = "a Critically Damped Solution"
         A = x0
         B = A * wn
         x = (A + B * t) * np.exp(-wn * t)
     elif dampRatio > 1:
-        solutionType = "Over Damped Solution"
+        solutionType = "an Over Damped Solution"
         A = x0 * (dampRatio + np.sqrt(dampRatio ** 2 - 1)) / (2 * np.sqrt(dampRatio ** 2 - 1))
         B = x0 - A
         x = A * np.exp((-dampRatio + np.sqrt(dampRatio ** 2 - 1)) * wn * t) + B * np.exp(
             (-dampRatio - np.sqrt(dampRatio ** 2 - 1)) * wn * t)
     else:
-        solutionType = "Unaccounted for Solution"
+        solutionType = " an unaccounted for Solution"
 
 
-# return x, t, solvable, solutionType
+# return x, t,  solutionType
     fig = px.line(x=t, y=x,
                   labels=dict(x="Time (sec)", y="Displacement, x (m)"))
 
-
-
-    return fig
+    dampRatioString = "Damping Ratio: {}".format(dampRatio)
+    solutionTypeString = "This is " + solutionType
+    return fig, dampRatioString, solutionTypeString
