@@ -4,7 +4,7 @@ dependencies:
   - python=3.7
   - pip
   - pip:
-      - numpy
+      - numpy==1.19.5
       - dash
       - dash-renderer
       - dash-core-components
@@ -12,4 +12,4 @@ dependencies:
       - dash-bootstrap-components
       - plotly
       - pandas==1.1.5   # Something up with Heroku when you use latest version!! So use 1.1.5
-      - gunicorn # for app deploymen
+      - gunicorn # for app deployment
