@@ -24,31 +24,31 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Mass, m", addon_type="prepend"),
-                    dbc.Input(id="m", placeholder="kg", type="number", min=0, max=100, step=0.1),
+                    dbc.Input(id="m", placeholder="kg", type="number", min=0, max=100, step=0.1, value=1),
                 ],
             ), className="mb-1 col-12 col-sm-12 col-md-6"),
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Spring Constant, k", addon_type="prepend"),
-                    dbc.Input(id="k", placeholder="N/m", type="number", min=0, max=100, step=0.1),
+                    dbc.Input(id="k", placeholder="N/m", type="number", min=0, max=100, step=0.1, value=2.5),
                 ],
             ), className="mb-1 col-12 col-sm-12 col-md-6"),
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Damping Coefficient, c", addon_type="prepend"),
-                    dbc.Input(id="c", placeholder="Ns/m", type="number", min=0, max=100, step=0.01),
+                    dbc.Input(id="c", placeholder="Ns/m", type="number", min=0, max=100, step=0.01, value=1.5),
                 ],
             ), className="mb-1 col-12 col-sm-12 col-md-6"),
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Initial Displacement, X0", addon_type="prepend"),
-                    dbc.Input(id="x0", placeholder="kg", type="number", min=0, max=100, step=0.1),
+                    dbc.Input(id="x0", placeholder="kg", type="number", min=0, max=100, step=0.1, value=0.1),
                 ],
             ), className="mb-1 col-12 col-sm-12 col-md-6"),
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Time Span, t", addon_type="prepend"),
-                    dbc.Input(id="tend", placeholder="s", type="number", min=0, max=10000, step=0.1),
+                    dbc.Input(id="tend", placeholder="s", type="number", min=0, max=10000, step=0.1, value=10),
                 ],
             ), className="mb-1 col-12 col-sm-12 col-md-6"),
             dbc.Col(dbc.InputGroup(
@@ -70,7 +70,6 @@ line1_input = dbc.Row([
 layout = dbc.Container([
     header,
     line1_input,
-
     dcc.Graph(id='sine_plot', figure={}),
 
 ], fluid=True)
