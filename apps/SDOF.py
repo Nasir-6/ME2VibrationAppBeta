@@ -86,7 +86,7 @@ layout = dbc.Container([
 def update_output(n_clicks, m, k, c, x0, tend, n):
     wn = np.sqrt(k / m)  # Natural Freq of spring mass system
     dampRatio = c / (2 * np.sqrt(k * m))
-    tlim = 30
+    tlim = 1000
     if tend < tlim:  # 30 is limit (Change this once I have a value)
         t = np.linspace(0, tend, n)
     else:
