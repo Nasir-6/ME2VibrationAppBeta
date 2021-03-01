@@ -284,7 +284,7 @@ layout = dbc.Container([
     Input("m", "value")
 )
 def mass_input_validator(mass_input):
-    err_string, is_invalid = validate_input("mass", mass_input, step=0.001, min=0)
+    err_string, is_invalid = validate_input("mass", mass_input, step=0.001, min=0.001)
     if is_invalid:
         return err_string, 1    # Set nclicks to 1 to call popover toggle
     else:
