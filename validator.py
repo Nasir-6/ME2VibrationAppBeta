@@ -11,47 +11,60 @@ import dash_html_components as html
 #       Min (num) = The Minimum value must be
 #       Max (num) = Maximum limit
 #   Output
-#       err (string) = String explaining the input issue
-#       is_invalid (bool) = Flag to
+#       err (string) = Contacatenated String explaining the input issues
+#       is_invalid (bool) = Flag to raise error - REQUIRED FOR PREVENT SUBMIT
 def validate_input(name, value, step, min, max=None):
 
+    # Initialise is_invalid flag & error string
     is_invalid = False
     err = ""
     steperr = ""
     minerr = ""
     maxerr = ""
-    if(value==None):
+
+    if(value==None):    # If input box is empty
         err = "You did not input a value for the " + str(name)
         is_invalid = True
     else:
+        # Use modulus to find if it has a min increment smaller or not
+        # IMPORTANT: Decimal was used to deal with floating point issues!!!
         remainder = Decimal(str(value)) % Decimal(str(step))
         if(remainder != 0 and value!=0 and min!=0):
             steperr = "\n    • The minimum increment is " + str(step)
             is_invalid = True
-        else:
-            steperr = "\n    • The minimum increment is greater than " + str(step)
+
         if(value < min):
             minerr = "\n    • The value is not smaller than " + str(min)
             is_invalid = True
-        else:
-            minerr = "\n    • The value is greater than or equal to " + str(min)
-        if(max!=None):
+
+        if(max!=None):      # Case of a max limit
             if(value>max):
                 maxerr = "\n    • The value is not larger than " + str(max)
                 is_invalid = True
-            else:
-                maxerr = "\n    •The value is smaller than or equal to the maximum limit of " + str(max)
+
         if(is_invalid):
             err = ["Your " + name + " input is invalid please ensure:", html.Br(), steperr, html.Br(), minerr, html.Br(), maxerr]
         else:
+            steperr = "\n    • The minimum increment is greater than " + str(step)
+            minerr = "\n    • The value is greater than or equal to " + str(min)
+            if (max != None):  # Case of a max limit
+                maxerr = "\n    •The value is smaller than or equal to the maximum limit of " + str(max)
             err = ["Your "+ name + " input is valid as: ", html.Br(), steperr, html.Br(), minerr, html.Br(), maxerr]
     return err, is_invalid
 
 
+# Function to validate all inputs - THIS IS KEY FOR PREVENT UPDATE
+#   Inputs
+#       All inputs (THIS IS CURRENTLY FOR SDOF - NEED TO ALTER FOR FORCED VIB ETC.!!!)
+
+#   Outputs
+#       is_invalid (bool) = A variable to return whether a single input is invalid (TRUE) or if all inputs are valid (FALSE)
+#                           This is required to prevent submit!!!
 def validate_all_inputs(mass_input, springConst_input, dampRatio_input, dampCoeff_input, initDisp_input, tSpan_input, numPts_input):
 
     is_invalid = False
 
+    # PLEASE ENSURE THAT THE "step", "min", and "max" are correct for their respective inputs!!!
     err_string, mass_is_invalid = validate_input("mass", mass_input, step=0.001, min=0)
     err_string, k_is_invalid = validate_input("spring constant", springConst_input, step=0.001, min=0.001)
     err_string, dampRatio_is_invalid = validate_input("damping ratio", dampRatio_input, step=0.001, min=0, max=2)
@@ -71,7 +84,15 @@ def validate_all_inputs(mass_input, springConst_input, dampRatio_input, dampCoef
 
 
 
+# Function to check for aliasing - raises error message if there is aliasing
+#   Input Variables
+#       m = mass input (kg)
+#       k = spring constant input (N/m)
+#       tSpan = Time span input (sec)
+#       nPts = Number of points input
 
+#   Output
+#       alaising_warning = A warning message that tells user the nyquist limit and a recommended number of points
 
 def validate_aliasing(m, k, tSpan, nPts):
     wn = np.sqrt(k / m)
@@ -82,11 +103,16 @@ def validate_aliasing(m, k, tSpan, nPts):
     # print("1 wave time ", 1/naturalFreqHz, "s")
     # print("Sampling Frequency is ", sampFreq, "samples per sec")
 
+    # Nyquist-Shannon law to prevent aliasing (Will be the limit but still some issues)
     nPts_required = 2 * naturalFreqHz * tSpan
+    # Give recommended amount to ensure wave is captured properly (double required)
+    nPts_recommended = 4 * naturalFreqHz * tSpan
 
-    if sampFreq< 2*naturalFreqHz:
+    if sampFreq< 2*naturalFreqHz:   # If Aliasing occurs with current input
         aliasing_warning = ["Please Ensure your sampling frequency is more than double the natural frequency.",
-                            html.Br(),"You need well above "+ str(np.ceil(nPts_required)) + " points to prevent aliasing"]
+                            html.Br(),"You need well above "+ str(np.ceil(nPts_required)) + " points to prevent aliasing",
+                            html.Br(),"We recommend using more than " + str(np.ceil(nPts_recommended)) + "."
+                            ]
     else:
         aliasing_warning = ""
 
