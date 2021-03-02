@@ -9,7 +9,7 @@ import plotly.express as px
 from validator import *
 from app import app
 
-header = html.H3('Single Degree Of Freedom', className=" mt-1, text-center")
+header = html.H3('Single Degree Of Freedom', className=" mt-2, text-center")
 about_Text = html.P(["This SDOF solver takes in your parameters and then produces a time history plot of your system. "
                     "Try it out by changing the input parameters and pressing submit to view your solution at the bottom of the page. To submit feedback for this module please click ", html.A("here", href="https://forms.gle/puL3mKPbchXzsRrV7", target="_blank"), "."])
 
