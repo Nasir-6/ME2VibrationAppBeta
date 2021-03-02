@@ -108,10 +108,11 @@ def validate_aliasing(m, k, tSpan, nPts):
     # Give recommended amount to ensure wave is captured properly (double required)
     nPts_recommended = 4 * naturalFreqHz * tSpan
 
-    if sampFreq< 2*naturalFreqHz:   # If Aliasing occurs with current input
-        aliasing_warning = ["Please Ensure your sampling frequency is more than double the natural frequency.",
-                            html.Br(),"You need well above "+ str(np.ceil(nPts_required)) + " points to prevent aliasing",
-                            html.Br(),"We recommend using more than " + str(np.ceil(nPts_recommended)) + "."
+    if sampFreq < 2*naturalFreqHz:   # If Aliasing occurs with current input
+        aliasing_warning = [
+            "Please ensure your sampling frequency (Number of Points/Time Span), " + str(np.round(sampFreq, decimals=2)) +" Hz, is well above double the natural frequency of the system, "+ str(np.round(naturalFreqHz,decimals=2)) + " Hz.",
+            html.Br(),"This is to prevent aliasing from occuring.",
+            html.Br(),"We recommend increasing the number of points beyond " + str(np.ceil(nPts_recommended)) + " points."
                             ]
     else:
         aliasing_warning = ""

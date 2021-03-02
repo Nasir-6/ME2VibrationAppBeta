@@ -17,7 +17,7 @@ damp_switch = dbc.FormGroup(
     [
         dbc.Checklist(
             options=[
-                {"label": "Damping Ratio Or Coefficient", "value": 1}
+                {"label": "Use Damping Coefficient", "value": 1}
             ],
             value=[],
             id="damping-switch",
@@ -214,6 +214,10 @@ line1_input = dbc.Row([
                     )
                 ],
             ), className="mb-1 col-12 col-sm-12 col-md-12 col-lg-6"),
+            dbc.Col(
+                html.H6("Initial Conditions"),
+                className="mb-1 mt-1 col-12 col-sm-12 col-md-12 col-lg-12"
+            ),
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Initial Displacement, X0 (m)", addon_type="prepend"),
@@ -255,7 +259,8 @@ line1_input = dbc.Row([
             ),
             dbc.Button("Submit", color="secondary", id='submit-button-state', size="sm")
         ]),
-        dbc.Row(html.P(id="solution_string")),
+        dbc.Row(html.P(id="input_warning_string", className="text-danger")),
+        dbc.Row(html.P(id="system_params")),
 
 
     ]),
@@ -525,7 +530,8 @@ def update_damping_ratio(dampRatio_disabled, dampRatio, c, k, m):
 
 # This Function plots the graph
 @app.callback(Output('SDOF_plot', 'figure'),
-              Output('solution_string', 'children'),
+              Output('input_warning_string', 'children'),
+              Output('system_params', 'children'),
               Input('submit-button-state', 'n_clicks'),
               State('m', 'value'),
               State('k', 'value'),
@@ -539,45 +545,64 @@ def update_output(n_clicks, m, k, dampRatio, dampCoeff, x0, tend, n):
     # First validate inputs
     is_invalid = validate_all_inputs(m,k,dampRatio, dampCoeff, x0, tend, n)
     if(is_invalid):
-        solutionTypeString = "Graph was not Updated. Please check your inputs before Submitting"
-        return dash.no_update, solutionTypeString
-
-    x, t, solutionType = SDOF_solver(m, k, dampRatio,  x0, tend, n)
-    fig = px.line(x=t, y=x, labels=dict(x="Time (sec)",
-                                        y="Displacement, x (m)"))
-    solutionTypeString = "This is " + solutionType + ". Please scroll down to see your solution."
-    return fig, solutionTypeString
+        fig = px.line(x=[0], y=[0],
+                      labels=dict(
+                          x="Time (sec)",
+                          y="Displacement, x (m)"
+                      )
+                      )
+        input_warning_string = ["Graph was cleared!", html.Br(),
+                                "Please check your inputs before Submitting again!"]
+        system_params = [""]
+        return fig, input_warning_string, system_params
+    else:
+        x, t, wn, wnHz, maxAmp, solutionType = SDOF_solver(m, k, dampRatio, x0, tend, n)
+        fig = px.line(x=t, y=x,
+                      labels=dict(
+                          x="Time (sec)",
+                          y="Displacement, x (m)"
+                      )
+                      )
+        input_warning_string = ""
+        # Create a string here!!!!!! Make solver function spit out the frequency, Hz and rad/s and max amplitude!!! ====================================
+        system_params = ["Please scroll down to see your solution.", html.Br(), html.Br(),
+                         "System Parameters:", html.Br(),
+                         "Natural Frequency, wn (rad/s): "+ str(wn) + " rad/s", html.Br(),
+                         "Natural Frequency, wn (Hz): " + str(wnHz) + " Hz", html.Br(),
+                         "Maximum displacement (m): " + str(maxAmp) + " m", html.Br(),
+                         solutionType]
+        # system_params = ""
+        return fig, input_warning_string, system_params
 
 def SDOF_solver(m, k, dampRatio, x0, tend, n):
     wn = np.sqrt(k / m)  # Natural Freq of spring mass system
-    tlim = 1000
-    if tend < tlim:  # 30 is limit (Change this once I have a value)
-        t = np.linspace(0, tend, n)
-    else:
-        t = np.linspace(0, tlim, n)
-    x = t.copy()
+    wnHz = wn/(2*np.pi)     # Natural freq in Hz
+    t = np.linspace(0, tend, n)
+
 
     if dampRatio == 0:
         x = x0 * np.cos(wn * t)
-        solutionType = "an Undamped Solution"
+        solutionType = "This is an Undamped Solution"
     elif 1 > dampRatio > 0:
-        solutionType = "an Under Damped Solution"
+        solutionType = "This is an Under Damped Solution"
         wd = wn * np.sqrt(1 - dampRatio ** 2)
         A = x0
         B = dampRatio * A / wd
         x = np.exp(-dampRatio * wn * t) * (A * np.cos(wd * t) + B * np.sin(wd * t))
     elif dampRatio == 1:
-        solutionType = "a Critically Damped Solution"
+        solutionType = "This is a Critically Damped Solution"
         A = x0
         B = A * wn
         x = (A + B * t) * np.exp(-wn * t)
     elif dampRatio > 1:
-        solutionType = "an Over Damped Solution"
+        solutionType = "This is an Over Damped Solution"
         A = x0 * (dampRatio + np.sqrt(dampRatio ** 2 - 1)) / (2 * np.sqrt(dampRatio ** 2 - 1))
         B = x0 - A
         x = A * np.exp((-dampRatio + np.sqrt(dampRatio ** 2 - 1)) * wn * t) + B * np.exp(
             (-dampRatio - np.sqrt(dampRatio ** 2 - 1)) * wn * t)
     else:
-        solutionType = " an unaccounted for Solution"
+        solutionType = "This is an unaccounted for Solution"
 
-    return x, t,  solutionType
+    maxAmp = np.round(max(x), decimals=2)
+
+    return x, t, np.round(wn,decimals=2), np.round(wnHz,decimals=2), maxAmp, solutionType

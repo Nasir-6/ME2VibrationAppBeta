@@ -120,7 +120,7 @@ def forcedPlot(t=0, x=0, F=0, xf=0, tf=0,  solvable=False, plotCombinedResponse=
 
 # FRF ===========================
 
-def FRFSolver(m=10, k=10 ** 6, dampRatios=np.array([0.25,0.15,0.5]), wantNormalised = False):
+def FRFSolver(m=10, k=10, dampRatios=np.array([0.25,0.15,0.5]), wantNormalised = False):
 
     solvable = True
     for dampRat in dampRatios:
@@ -153,7 +153,7 @@ def FRFSolver(m=10, k=10 ** 6, dampRatios=np.array([0.25,0.15,0.5]), wantNormali
 
     else:
         print("WTH IS THIS!")
-    return amp, phase, r, w , solvable
+    return amp, phase, r, w, solvable
 
 def FRFPlot(solvable, amp, phase, dampRatios=np.array([0.25,0.15,0.5]), r=np.linspace(0,10,10000), w=np.linspace(0,10,10000), wantNormalised=False):
 
