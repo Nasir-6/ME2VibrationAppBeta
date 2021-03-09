@@ -576,6 +576,12 @@ def update_output(n_clicks, m, k, dampRatio, dampCoeff, x0, F0, wlim):
     dampRatios = [dampRatio]
     tend = 1    # So doesn't flag validator
 
+    # This is to change slider limits according to wlim
+    slider_marks = {
+                       0: '0 rad/s',
+                       wlim: str(wlim) + ' rad/s',
+                   },
+
     is_invalid = validate_all_inputsFV(m,k,dampRatio, dampCoeff, x0, F0, wlim)
     print(is_invalid)
     if(is_invalid):
@@ -595,7 +601,7 @@ def update_output(n_clicks, m, k, dampRatio, dampCoeff, x0, F0, wlim):
         input_warning_string = ["Graph was cleared!", html.Br(),
                                 "Please check your inputs before Submitting again!"]
         system_params = [""]
-        return FRFAmp_fig, FRFPhase_fig,  input_warning_string, system_params
+        return FRFAmp_fig, FRFPhase_fig,  input_warning_string, system_params, wlim, slider_marks[0]
     else:
         amp, phase, r, w, wn, wnHz, wd, wdHz = FRF_Solver(m, k, dampRatios, wlim, wantNormalised=False)
         # print(w)
@@ -628,12 +634,8 @@ def update_output(n_clicks, m, k, dampRatio, dampCoeff, x0, F0, wlim):
                          "Natural Frequency, ωn (rad/s): " + str(wn) + " rad/s", html.Br(),
                          "Natural Frequency, ωn (Hz): " + str(wnHz) + " Hz", html.Br(),
                          ] + dampedNatFreq_string
-        # This is to change slider limits according to wlim
-        slider_marks ={
-                   0: '0 rad/s',
-                   wlim: str(wlim) + ' rad/s',
-               },
-        print(slider_marks[0])
+
+
     return FRFAmp_fig, FRFPhase_fig, input_warning_string, system_params, wlim, slider_marks[0]
 
 def FRF_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormalised = False):
