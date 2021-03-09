@@ -543,7 +543,7 @@ def update_damping_ratio(dampRatio_disabled, dampRatio, c, k, m):
 def update_output(n_clicks, m, k, dampRatio, dampCoeff, x0, tend, n):
 
     # First validate inputs
-    is_invalid = validate_all_inputs(m,k,dampRatio, dampCoeff, x0, tend, n)
+    is_invalid = validate_all_inputsSDOF(m,k,dampRatio, dampCoeff, x0, tend, n)
     if(is_invalid):
         fig = px.line(x=[0], y=[0],
                       labels=dict(
@@ -556,7 +556,7 @@ def update_output(n_clicks, m, k, dampRatio, dampCoeff, x0, tend, n):
         system_params = [""]
         return fig, input_warning_string, system_params
     else:
-        x, t, wn, wnHz, maxAmp, solutionType = SDOF_solver(m, k, dampRatio, x0, tend, n)
+        x, t, wn, wnHz, wd, wdHz, maxAmp, solutionType = SDOF_solver(m, k, dampRatio, x0, tend, n)
         fig = px.line(x=t, y=x,
                       labels=dict(
                           x="Time (sec)",
@@ -565,18 +565,35 @@ def update_output(n_clicks, m, k, dampRatio, dampCoeff, x0, tend, n):
                       )
         input_warning_string = ""
         # Create a string here!!!!!! Make solver function spit out the frequency, Hz and rad/s and max amplitude!!! ====================================
+
+        if 0 < dampRatio < 1:
+            # If the system is underdamped there will be damped natural freq
+            dampedNatFreq_string = ["Damped Natural Frequency, ωd (rad/s): " + str(wd) + " rad/s", html.Br(),
+                                    "Damped Natural Frequency, ωd (Hz): " + str(wdHz) + " Hz", html.Br(), ]
+        else:
+            # Otherwise no damped nat frequ
+            dampedNatFreq_string = [""]
+
         system_params = ["Please scroll down to see your solution.", html.Br(), html.Br(),
                          "System Parameters:", html.Br(),
-                         "Natural Frequency, wn (rad/s): "+ str(wn) + " rad/s", html.Br(),
-                         "Natural Frequency, wn (Hz): " + str(wnHz) + " Hz", html.Br(),
+                         "Natural Frequency, ωn (rad/s): "+ str(wn) + " rad/s", html.Br(),
+                         "Natural Frequency, ωn (Hz): " + str(wnHz) + " Hz", html.Br(),
                          "Maximum displacement (m): " + str(maxAmp) + " m", html.Br(),
-                         solutionType]
-        # system_params = ""
+                         solutionType, html.Br()
+                         ] + dampedNatFreq_string
+
         return fig, input_warning_string, system_params
 
 def SDOF_solver(m, k, dampRatio, x0, tend, n):
     wn = np.sqrt(k / m)  # Natural Freq of spring mass system
     wnHz = wn/(2*np.pi)     # Natural freq in Hz
+    if 0 < dampRatio < 1:
+        wd = wn*np.sqrt(1-dampRatio**2)     # Damped nat freq (rad/s)
+        wdHz = wd/(2*np.pi)     # Damped Natural freq in Hz
+    else:
+        wd = 0
+        wdHz = 0
+
     t = np.linspace(0, tend, n)
 
 
@@ -605,4 +622,4 @@ def SDOF_solver(m, k, dampRatio, x0, tend, n):
 
     maxAmp = np.round(max(x), decimals=2)
 
-    return x, t, np.round(wn,decimals=2), np.round(wnHz,decimals=2), maxAmp, solutionType
+    return x, t, np.round(wn,decimals=2), np.round(wnHz,decimals=2), np.round(wd,decimals=2), np.round(wdHz,decimals=2), maxAmp, solutionType

@@ -9,9 +9,25 @@ import plotly.express as px
 from validator import *
 from app import app
 
+
+
 header = html.H3('Forced Vibration', className=" mt-2, text-center")
 about_Text = html.P(["This Forced Vibrations solver takes in your parameters and then produces an FRF response. You can then choose a frequency to view the time history plot at that specific frequency."
                     "Try it out by changing the input parameters and pressing submit to view your solution at the bottom of the page.)"])
+
+
+damp_switch = dbc.FormGroup(
+    [
+        dbc.Checklist(
+            options=[
+                {"label": "Use Damping Coefficient", "value": 1}
+            ],
+            value=[],
+            id="damping-switch-FV",
+            switch=True,
+        ),
+    ]
+)
 
 
 # ================== ALL POPOVER COMPONENTS
@@ -73,7 +89,7 @@ dampCoeff_popover = html.Div(
         ),
         dbc.Popover(
             [
-                dbc.PopoverHeader("Damping Coefficient Input-FV"),
+                dbc.PopoverHeader("Damping Coefficient Input"),
                 dbc.PopoverBody([], id="dampCoeff_validation_message-FV"),
             ],
             id="dampCoeff_popover-FV",
@@ -90,7 +106,7 @@ initDisp_popover = html.Div(
         ),
         dbc.Popover(
             [
-                dbc.PopoverHeader("Initial Displacement Input-FV"),
+                dbc.PopoverHeader("Initial Displacement Input"),
                 dbc.PopoverBody([], id="initDisp_validation_message-FV"),
             ],
             id="initDisp_popover-FV",
@@ -101,40 +117,46 @@ initDisp_popover = html.Div(
 )
 
 
-tSpan_popover = html.Div(
+forceAmp_popover = html.Div(
     [
         dbc.Button(
-            "?", id="tSpan-popover-target-FV", color="info",
+            "?", id="forceAmp-popover-target-FV", color="info",
         ),
         dbc.Popover(
             [
-                dbc.PopoverHeader("Time Span Input"),
-                dbc.PopoverBody([], id="tSpan_validation_message-FV"),
+                dbc.PopoverHeader("Forcing Amplitude"),
+                dbc.PopoverBody([], id="forceAmp_validation_message-FV"),
             ],
-            id="tSpan_popover-FV",
+            id="forceAmp_popover-FV",
             is_open=False,
-            target="tSpan-popover-target-FV",
+            target="forceAmp-popover-target-FV",
         ),
     ],
 )
 
 
-numPts_popover = html.Div(
+
+
+
+
+wlim_popover = html.Div(
     [
         dbc.Button(
-            "?", id="numPts-popover-target-FV", color="info",
+            "?", id="wlim-popover-target-FV", color="info",
         ),
         dbc.Popover(
             [
-                dbc.PopoverHeader("Number of Points Input-FV"),
-                dbc.PopoverBody([], id="numPts_validation_message-FV"),
+                dbc.PopoverHeader("ω axis limit Input"),
+                dbc.PopoverBody([], id="wlim_validation_message-FV"),
             ],
-            id="numPts_popover-FV",
+            id="wlim_popover-FV",
             is_open=False,
-            target="numPts-popover-target-FV",
+            target="wlim-popover-target-FV",
         ),
     ],
 )
+
+
 
 
 
@@ -145,7 +167,7 @@ numPts_popover = html.Div(
 line1_input = dbc.Row([
 
     dbc.Col(
-        html.Img(src=app.get_asset_url('SDOFPic.png'),
+        html.Img(src=app.get_asset_url('ForcedVib.png'),
                  className="img-fluid"),
         className="col-12 col-sm-5 col-md-3 col-lg-3"),
     dbc.Col([
@@ -180,6 +202,7 @@ line1_input = dbc.Row([
                 ],
             ), className="mb-1 col-12 col-sm-12 col-md-12 col-lg-6"),
 
+            dbc.Col(damp_switch, width=12),
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Damping Ratio", addon_type="prepend"),
@@ -193,11 +216,36 @@ line1_input = dbc.Row([
             ), className="mb-1 col-12 col-sm-12 col-md-12 col-lg-6"),
             dbc.Col(dbc.InputGroup(
                 [
+                    dbc.InputGroupAddon("Damping Coefficient, c (Ns/m)", addon_type="prepend"),
+                    dbc.Input(id="c-FV", placeholder="Ns/m", debounce=True, type="number", value=1, min=0, step=0.001),
+                    dbc.InputGroupAddon(
+                        dampCoeff_popover,
+                        addon_type="append"
+                    )
+                ],
+            ), className="mb-1 col-12 col-sm-12 col-md-12 col-lg-6"),
+            dbc.Col(
+                html.H6("Initial Conditions"),
+                className="mb-1 mt-1 col-12 col-sm-12 col-md-12 col-lg-12"
+            ),
+            dbc.Col(dbc.InputGroup(
+                [
                     dbc.InputGroupAddon("Initial Displacement, X0 (m)", addon_type="prepend"),
                     dbc.Input(id="x0-FV", placeholder="m", debounce=True, type="number", value=0.1, min=-10, max=10,
                               step=0.01),
                     dbc.InputGroupAddon(
                         initDisp_popover,
+                        addon_type="append"
+                    )
+                ],
+            ), className="mb-1 col-12 col-sm-12 col-md-12 col-lg-6"),
+            dbc.Col(dbc.InputGroup(
+                [
+                    dbc.InputGroupAddon("Forcing Amplitude, F0 (N)", addon_type="prepend"),
+                    dbc.Input(id="F0-FV", placeholder="N", debounce=True, type="number", value=0.1, min=-10, max=10,
+                              step=0.01),
+                    dbc.InputGroupAddon(
+                        forceAmp_popover,
                         addon_type="append"
                     )
                 ],
@@ -208,32 +256,18 @@ line1_input = dbc.Row([
             ),
             dbc.Col(dbc.InputGroup(
                 [
-                    dbc.InputGroupAddon("Time Span, t (s)", addon_type="prepend"),
-                    dbc.Input(id="tend-FV", placeholder="s", debounce=True,  type="number", value=2, min=0.01, max=360, step=0.01),
+                    dbc.InputGroupAddon("ω axis limit , ω (rad/s)", addon_type="prepend"),
+                    dbc.Input(id="wlim-FV", placeholder="s", debounce=True,  type="number", value=100, min=0.1, max=100, step=0.1),
                     dbc.InputGroupAddon(
-                        tSpan_popover,
+                        wlim_popover,
                         addon_type="append"
                     )
                 ],
             ), className="mb-1 col-12 col-sm-12 col-md-12 col-lg-6"),
-            dbc.Col(dbc.InputGroup(
-                [
-                    dbc.InputGroupAddon("Number of Points", addon_type="prepend"),
-                    dbc.Input(id="n-FV", placeholder="", debounce=True,  type="number", min=10, step=1, value=1000),
-                    dbc.InputGroupAddon(
-                        numPts_popover,
-                        addon_type="append"
-                    )
-                ],
-            ), className="mb-1 col-12 col-sm-12 col-md-12 col-lg-6"),
-            dbc.Col(
-                html.P(id="aliasing_Warning-FV", className="text-danger"),
-                width=12
-            ),
             dbc.Button("Submit", color="secondary", id='submit-button-state-FV', size="sm")
         ]),
-        dbc.Row(html.P(id="solution_string-FV")),
-
+        dbc.Row(html.P(id="input_warning_string-FV", className="text-danger")),
+        dbc.Row(html.P(id="system_params-FV")),
 
     ]),
 
@@ -241,19 +275,36 @@ line1_input = dbc.Row([
 
 
 
-# layout = dbc.Container([
-#     header,
-#     about_Text,
-#     line1_input,
-#     html.H3("Frequency Response Function (FRF) of your solution", className=" mt-1 mb-1 text-center"),
-#     dcc.Graph(id='FRF_plot', figure={}),
-#
-# ], fluid=True)
-
 layout = dbc.Container([
-    html.H3('Forced Vibration', className=" mt-2, text-center"),
-    html.H6("This module is currently under development. Do come back at a later date.",className=" mt-2, text-center" ),
+    header,
+    about_Text,
+    line1_input,
+    html.H3("Frequency Response Function (FRF) of your solution", className=" mt-1 mb-1 text-center"),
+    dcc.Graph(id='FRFAmp_plot', figure={}),
+    dcc.Graph(id='FRFPhase_plot', figure={}),
+    html.H3("Force and Displacement time history", className=" mt-1 mb-1 text-center"),
+    html.H4("Please choose a excitation frequency using the slider below", className=" mt-1 mb-1 text-center"),
+    dcc.Slider(id="w-slider",
+               min=0,
+               max=100,
+               step=0.01,
+               value=50,
+               marks={
+                   0: '0 rad/s',
+                   100: '100 rad/s'
+               },
+               updatemode='drag'
+               ),
+    html.P(id="w-slider-output-FV", className=" mt-1 mb-1 text-center"),
+    dcc.Graph(id='timeHistory-plot-FV', figure={}),
+
 ], fluid=True)
+
+# # THIS IS A PLACEHOLDER FOR BETA RELEASE - COMING SOON PAGE!!! ============================================================
+# layout = dbc.Container([
+#     html.H3('Forced Vibration', className=" mt-2, text-center"),
+#     html.H6("This module is currently under development. Do come back at a later date.",className=" mt-2, text-center" ),
+# ], fluid=True)
 
 
 
@@ -266,7 +317,7 @@ layout = dbc.Container([
     Input("m-FV", "value")
 )
 def mass_input_validator(mass_input):
-    err_string, is_invalid = validate_input("mass-FV", mass_input, step=0.001, min=0.001)
+    err_string, is_invalid = validate_input("mass", mass_input, step=0.001, min=0.001)
     if is_invalid:
         return err_string, 1    # Set nclicks to 1 to call popover toggle
     else:
@@ -287,10 +338,10 @@ def mass_toggle_popover(n, is_open):
 @app.callback(
     Output("springConst_validation_message-FV", "children"),
     Output("springConst-popover-target-FV", "n_clicks"),
-    Input("k", "value")
+    Input("k-FV", "value")
 )
 def springConst_input_validator(springConst_input):
-    err_string, is_invalid = validate_input("spring constant-FV", springConst_input, step=0.001, min=0.001)
+    err_string, is_invalid = validate_input("spring constant", springConst_input, step=0.001, min=0.001)
     if is_invalid:
         return err_string, 1    # Set nclicks to 1 to call popover toggle
     else:
@@ -316,7 +367,7 @@ def springConst_toggle_popover(n, is_open):
     Input("dampRatio-FV", "value")
 )
 def dampRatio_input_validator(dampRatio_input):
-    err_string, is_invalid = validate_input("damping ratio-FV", dampRatio_input, step=0.001, min=0, max=2)
+    err_string, is_invalid = validate_input("damping ratio", dampRatio_input, step=0.001, min=0, max=2)
     if is_invalid:
         return err_string, 1    # Set nclicks to 1 to call popover toggle
     else:
@@ -335,7 +386,34 @@ def dampRatio_toggle_popover(n, is_open):
     return is_open
 
 
+######### DAMPING COEFFFICIENT VALIDATOR #########################
+@app.callback(
+    Output("dampCoeff_validation_message-FV", "children"),
+    Output("dampCoeff-popover-target-FV", "n_clicks"),
+    Input("c-FV", "value")
+)
+def dampCoeff_input_validator(dampCoeff_input):
+    err_string, is_invalid = validate_input("damping coefficient", dampCoeff_input, step=0.001, min=0)
+    if is_invalid:
+        return err_string, 1    # Set nclicks to 1 to call popover toggle
+    else:
+        return err_string, 0    # Set nclicks to 0 to prevent popover
 
+
+# Toggle dampCoeff popover with button (or validator callback above!!)
+@app.callback(
+    Output("dampCoeff_popover-FV", "is_open"),
+    [Input("dampCoeff-popover-target-FV", "n_clicks")],
+    [State("dampCoeff_popover-FV", "is_open")],
+)
+def dampCoeff_toggle_popover(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+
+
+######### Initial Dislacement VALIDATOR #########################
 
 @app.callback(
     Output("initDisp_validation_message-FV", "children"),
@@ -363,69 +441,109 @@ def initDisp_toggle_popover(n, is_open):
 
 
 
+######### Forcing Amplitude VALIDATOR #########################
+
 @app.callback(
-    Output("tSpan_validation_message-FV", "children"),
-    Output("tSpan-popover-target-FV", "n_clicks"),
-    Input("tend-FV", "value")
+    Output("forceAmp_validation_message-FV", "children"),
+    Output("forceAmp-popover-target-FV", "n_clicks"),
+    Input("F0-FV", "value")
 )
-def tSpan_input_validator(tSpan_input):
-    err_string, is_invalid = validate_input("time span", tSpan_input, step=0.01, min=0.01, max=360)
+def forceAmp_input_validator(forceAmp_input):
+    err_string, is_invalid = validate_input("forcing amplitude", forceAmp_input, step=0.1, min=-10, max=10)
     if is_invalid:
         return err_string, 1    # Set nclicks to 1 to call popover toggle
     else:
         return err_string, 0    # Set nclicks to 0 to prevent popover
 
 
-# Toggle tSpan popover with button (or validator callback above!!)
+# Toggle initDisp popover with button (or validator callback above!!)
 @app.callback(
-    Output("tSpan_popover-FV", "is_open"),
-    [Input("tSpan-popover-target-FV", "n_clicks")],
-    [State("tSpan_popover-FV", "is_open")],
+    Output("forceAmp_popover-FV", "is_open"),
+    [Input("forceAmp-popover-target-FV", "n_clicks")],
+    [State("forceAmp_popover-FV", "is_open")],
 )
-def tSpan_toggle_popover(n, is_open):
+def forceAmp_toggle_popover(n, is_open):
     if n:
         return not is_open
     return is_open
 
 
 
+######### w x-axis limit VALIDATOR #########################
+
 @app.callback(
-    Output("numPts_validation_message-FV", "children"),
-    Output("numPts-popover-target-FV", "n_clicks"),
-    Input("n-FV", "value")
+    Output("wlim_validation_message-FV", "children"),
+    Output("wlim-popover-target-FV", "n_clicks"),
+    Input("wlim-FV", "value")
 )
-def numPts_input_validator(numPts_input):
-    err_string, is_invalid = validate_input("number of points", numPts_input, step=1, min=10)
+def wlim_input_validator(wlim_input):
+    err_string, is_invalid = validate_input("ω axis limit ", wlim_input, step=0.1, min=0.1, max=100)
     if is_invalid:
         return err_string, 1    # Set nclicks to 1 to call popover toggle
     else:
         return err_string, 0    # Set nclicks to 0 to prevent popover
 
 
-# Toggle numPts popover with button (or validator callback above!!)
+# Toggle wlim popover with button (or validator callback above!!)
 @app.callback(
-    Output("numPts_popover-FV", "is_open"),
-    [Input("numPts-popover-target-FV", "n_clicks")],
-    [State("numPts_popover-FV", "is_open")],
+    Output("wlim_popover-FV", "is_open"),
+    [Input("wlim-popover-target-FV", "n_clicks")],
+    [State("wlim_popover-FV", "is_open")],
 )
-def numPts_toggle_popover(n, is_open):
+def wlim_toggle_popover(n, is_open):
     if n:
         return not is_open
     return is_open
 
 
-# ======= ALIASING WARNING ==================
+
+
+
+
+# ======== Damping Ratio & Coefficient Updates =============
+
+# This function disables the damping ratio or damping coefficient input using the toggle
 @app.callback(
-    Output("aliasing_Warning-FV", "children"),
-    [Input("m-FV", "value"),
-     Input("k-FV", "value"),
-     Input("tend-FV", "value"),
-     Input("n-FV", "value"),
-     ]
+    Output("dampRatio-FV", "disabled"),
+    Output("c-FV", "disabled"),
+    Input("damping-switch-FV", "value")
 )
-def aliasing_check(m, k, tSpan, nPts):
-    aliasing_warning = validate_aliasing(m, k, tSpan, nPts)
-    return aliasing_warning
+def damping_toggle(switch):
+    switch_state = len(switch)
+    return switch_state, not switch_state
+
+
+# This function updates damping coefficient c when it is disabled and other values are inputted
+@app.callback(
+    Output(component_id='c-FV', component_property='value'),
+    Input(component_id='c-FV', component_property='disabled'),
+    Input(component_id='c-FV', component_property='value'),
+    Input(component_id='dampRatio-FV', component_property='value'),
+    Input(component_id='k-FV', component_property='value'),
+    Input(component_id='m-FV', component_property='value')
+)
+def update_c(c_disabled, c, dampRatio, k, m):
+    if c_disabled and m!=None and k!=None and dampRatio!=None:
+        c = np.round((dampRatio * 2 * np.sqrt(k * m)),3)
+    return c
+
+
+# This function updates damping ratio when it is disabled and other values are inputted
+@app.callback(
+    Output(component_id='dampRatio-FV', component_property='value'),
+    Input(component_id='dampRatio-FV', component_property='disabled'),
+    Input(component_id='dampRatio-FV', component_property='value'),
+    Input(component_id='c-FV', component_property='value'),
+    State(component_id='k-FV', component_property='value'),
+    State(component_id='m-FV', component_property='value')
+)
+def update_damping_ratio(dampRatio_disabled, dampRatio, c, k, m):
+    if dampRatio_disabled and m!=None and k!=None and c!=None:
+        dampRatio = np.round((c / (2 * np.sqrt(k * m))),3)
+    return dampRatio
+
+
+
 
 
 
@@ -438,36 +556,99 @@ def aliasing_check(m, k, tSpan, nPts):
 # ============ Plotting Graph ========================
 
 # This Function plots the FRF graph
-@app.callback(Output('FRF_plot', 'figure'),
-              Output('solution_string-FV', 'children'),
+@app.callback(Output('FRFAmp_plot', 'figure'),
+              Output('FRFPhase_plot', 'figure'),
+              Output('input_warning_string-FV', 'children'),
+              Output('system_params-FV', 'children'),
+              Output('w-slider', 'max'),
+              Output('w-slider', 'marks'),
               Input('submit-button-state-FV', 'n_clicks'),
               State('m-FV', 'value'),
               State('k-FV', 'value'),
               State('dampRatio-FV', 'value'),
+              State('c-FV', 'value'),
               State('x0-FV', 'value'),
-              State('tend-FV', 'value'),
-              State('n-FV', 'value'))
-def update_output(n_clicks, m, k, dampRatio, x0, tend, n):
+              State('F0-FV', 'value'),
+              State('wlim-FV', 'value'),
+              )
+def update_output(n_clicks, m, k, dampRatio, dampCoeff, x0, F0, wlim):
 
-    dampCoeff=1 # THIS IS TO USE VALIDATION (NEED TO SORT THIS OUT!!!!!)
-    # First validate inputs
-    is_invalid = validate_all_inputs(m,k,dampRatio, dampCoeff, x0, tend, n)
+    dampRatios = [dampRatio]
+    tend = 1    # So doesn't flag validator
+
+    is_invalid = validate_all_inputsFV(m,k,dampRatio, dampCoeff, x0, F0, wlim)
+    print(is_invalid)
     if(is_invalid):
         solutionTypeString = "Graph was not Updated. Please check your inputs before Submitting"
-        return dash.no_update, solutionTypeString
+        FRFAmp_fig = px.line(x=[0], y=[0],
+                      labels=dict(
+                          x="Excitation frequency (rad/s)",
+                          y="x/F (m/N)"
+                      )
+                      )
+        FRFPhase_fig = px.line(x=[0], y=[0],
+                      labels=dict(
+                          x="Excitation frequency (rad/s)",
+                          y="Phase (rad)"
+                      )
+                      )
+        input_warning_string = ["Graph was cleared!", html.Br(),
+                                "Please check your inputs before Submitting again!"]
+        system_params = [""]
+        return FRFAmp_fig, FRFPhase_fig,  input_warning_string, system_params
+    else:
+        amp, phase, r, w, wn, wnHz, wd, wdHz = FRF_Solver(m, k, dampRatios, wlim, wantNormalised=False)
+        # print(w)
+        # print(amp[0])
+        FRFAmp_fig = px.line(x=w, y=amp[0],
+                      labels=dict(
+                          x="Excitation frequency (rad/s)",
+                          y="x/F (m/N)"
+                      )
+                      )
+        FRFPhase_fig = px.line(x=w, y=phase[0],
+                      labels=dict(
+                          x="Excitation frequency (rad/s)",
+                          y="Phase (rad)"
+                      )
+                      )
 
-    x, t, solutionType = SDOF_solver(m, k, dampRatio,  x0, tend, n)
-    fig = px.line(x=t, y=x, labels=dict(x="Time (sec)",
-                                        y="Displacement, x (m)"))
-    solutionTypeString = "This is " + solutionType + ". Please scroll down to see your solution."
-    return fig, solutionTypeString
+        input_warning_string = ""
+        # Create a string here!!!!!! Make solver function spit out the frequency, Hz and rad/s and max amplitude!!! ====================================
+        if dampRatio > 0 and dampRatio < 1:
+            # If the system is underdamped there will be damped natural freq
+            dampedNatFreq_string = ["Damped Natural Frequency, ωd (rad/s): " + str(wd) + " rad/s", html.Br(),
+                                    "Damped Natural Frequency, ωd (Hz): " + str(wdHz) + " Hz", html.Br(), ]
+        else:
+            # Otherwise no damped nat frequ
+            dampedNatFreq_string = [""]
 
-def FRFSolver(m=10, k=10, dampRatios=np.array([0.25,0.15,0.5]), wantNormalised = False):
+        system_params = ["Please scroll down to see your solution.", html.Br(), html.Br(),
+                         "System Parameters:", html.Br(),
+                         "Natural Frequency, ωn (rad/s): " + str(wn) + " rad/s", html.Br(),
+                         "Natural Frequency, ωn (Hz): " + str(wnHz) + " Hz", html.Br(),
+                         ] + dampedNatFreq_string
+        # This is to change slider limits according to wlim
+        slider_marks ={
+                   0: '0 rad/s',
+                   wlim: str(wlim) + ' rad/s',
+               },
+        print(slider_marks[0])
+    return FRFAmp_fig, FRFPhase_fig, input_warning_string, system_params, wlim, slider_marks[0]
 
-    solvable = True
-    # INSERT VALIDATOR HERE
+def FRF_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormalised = False):
+
+
     wn = np.sqrt(k / m)  # Natural Freq of spring mass system
-    w = np.linspace(0, 10, 10000)
+    wnHz = wn / (2 * np.pi)  # Natural freq in Hz
+    if 0 < dampRatios[0] < 1:
+        wd = wn * np.sqrt(1 - dampRatios[0] ** 2)  # Damped nat freq (rad/s)
+        wdHz = wd / (2 * np.pi)  # Damped Natural freq in Hz
+    else:
+        wd = 0
+        wdHz = 0
+
+    w = np.linspace(0, wlim, 10000)   #SET LIMIT HERE FOR X AXIS!!!
     r = w / wn
 
     amp = np.zeros((len(dampRatios), len(w)))
@@ -484,11 +665,87 @@ def FRFSolver(m=10, k=10, dampRatios=np.array([0.25,0.15,0.5]), wantNormalised =
         row = 0
         for dampRat in dampRatios:
             c = dampRat * 2 * np.sqrt(k * m)
-            print(dampRat)
+            # print(dampRat)
             amp[row, :] = 1 / np.sqrt((k - m * w ** 2) ** 2 + (c * w) ** 2)
             phase[row, :] = np.arctan(-c * w / (k - m * w ** 2))
             phase[phase > 0] = phase[phase > 0] - np.pi
             row = row + 1
 
 
-    return amp, phase, r, w, solvable
+    return amp, phase, r, w, np.round(wn,decimals=2), np.round(wnHz,decimals=2), np.round(wd,decimals=2), np.round(wdHz,decimals=2)
+
+
+
+## SLIDER OUTPUT AND F/X Time history plots
+@app.callback(
+    Output('w-slider-output-FV', 'children'),
+    Output('timeHistory-plot-FV', 'figure'),
+    Input('w-slider', 'value'),
+    State('m-FV', 'value'),
+    State('k-FV', 'value'),
+    State('dampRatio-FV', 'value'),
+    State('c-FV', 'value'),
+    State('x0-FV', 'value'),
+    State('F0-FV', 'value'),
+)
+def update_output(w_slider_value, m, k, dampRatio, c, x0, F0):
+    slider_output_string = 'You have selected "{}" rad/s'.format(w_slider_value)
+    wHz = w_slider_value/(2*np.pi)
+    x, t, F, xf, tf = forcedSolver(m, k, dampRatio, c, x0, F0, wHz)
+
+    # timeHistory_plot = px.line(df, x="year", y="lifeExp", color='country')
+    df = {
+        'Time': t,
+        'Force, F': F,
+        'Forced Response, x': x
+    }
+    timeHistory_plot = px.line(df,
+                               x="Time",
+                               y=['Force, F', 'Forced Response, x'],
+                               labels={
+                                   "Time": "Time (s)",
+                                   "value": "Force(N)/Displacement(m) Amplitude",
+                                   "variable": "Response"
+                               }
+                               )
+
+    # print(timeHistory_plot.layout)
+
+    return slider_output_string, timeHistory_plot
+
+
+
+def forcedSolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, x0=0, Famp=10, wHz=5):
+
+
+    wn = np.sqrt(k / m)  # Natural Freq of spring mass system
+    dampRatio = c / (2 * np.sqrt(k * m))
+    wd = wn * np.sqrt(1 - dampRatio ** 2)  # Damped frequency
+    w = 2 * np.pi * wHz  # Conv Forced freq from Hz into rad/s
+
+    # Work out Nice time frame using decay to 1%
+    t_decay = 1 / (dampRatio*wn) * np.log(1 / 0.01)
+    tend = np.ceil(t_decay * 1.5)
+    t = np.linspace(0, tend, 10000)
+    x = t.copy()
+
+    # Solving for Complete Forced Solution
+    # Displacement amplitdue from force ONLY
+    x0f = Famp / np.sqrt((k - m * w ** 2) ** 2 + (c * w) ** 2)
+    phasef = np.arctan(c * w / (k - m * w ** 2))
+
+    A = x0 - x0f * np.sin(-phasef)
+    B = (dampRatio * wn * A - x0f * w * np.cos(-phasef)) / wd
+
+    x = np.exp(-dampRatio * wn * t) * (A * np.cos(wd * t) + B * np.sin(wd * t)) + x0f * np.sin(w * t - phasef)
+
+    # Only the Forcing amplitude and it's relevant displacment
+    # Shorter time scale, tf so can see phase shift
+    tf = np.linspace(0, 3, 1000)
+    F = Famp * np.sin(w * t)
+    xf = x0f * np.sin(w * tf - phasef)
+
+    print(x)
+
+
+    return x, t, F, xf, tf
