@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc
 from app import app
 from app import server
 # Import all the diff app pages
-from apps import SDOF, ForcedVib, VibrationIsolation, BaseExcitation    #
+from apps import SDOF, ForcedVib, VibrationIsolation, BaseExcitation
 
 PLOTLY_LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
 
@@ -89,6 +89,8 @@ def display_page(pathname):
         return SDOF.layout
     elif pathname == '/apps/ForcedVib':
         return ForcedVib.layout
+    elif pathname == '/apps/VibrationIsolation':
+        return VibrationIsolation.layout
     else:
         return '404'
 
