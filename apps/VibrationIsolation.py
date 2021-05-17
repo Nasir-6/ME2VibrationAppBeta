@@ -726,7 +726,7 @@ def TransmissibilityTimeHistorySolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, Fam
     f = wHz
     t_one_wave = 1/f
     tend = t_one_wave * 6
-    t = np.linspace(0, tend, 10000)
+    t = np.linspace(0, tend, 1000)
 
     # Solving for Complete Forced Solution
     Tamp = np.sqrt((k**2 + (c*w)**2)/((k - m * w ** 2) ** 2 + (c * w) ** 2))
