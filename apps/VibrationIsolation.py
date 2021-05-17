@@ -216,8 +216,8 @@ line1_input = dbc.Row([
             ),
             dbc.Col(dbc.InputGroup(
                 [
-                    dbc.InputGroupAddon("ω axis limit , ω (rad/s)", addon_type="prepend"),
-                    dbc.Input(id="wlim-VI", placeholder="s", debounce=True, type="number", value=100, min=0.1, max=100,
+                    dbc.InputGroupAddon("ω axis limit , ω (Hz)", addon_type="prepend"),
+                    dbc.Input(id="wlim-VI", placeholder="s", debounce=True, type="number", value=40, min=0.1, max=100,
                               step=0.1),
                     dbc.InputGroupAddon(
                         wlim_popover,
@@ -245,14 +245,14 @@ layout = dbc.Container([
             [
                 dcc.Slider(id="w-slider-VI",
                            min=0,
-                           max=100,
+                           max=40,
                            step=0.01,
-                           value=50,
+                           value=10,
                            marks={
-                               0: '0 rad/s',
-                               100: '100 rad/s'
+                               0: '0 Hz',
+                               100: '40 Hz'
                            },
-                           updatemode='drag'
+                           updatemode='mouseup'
                            ),
             ],
             className="mb-3 col-12 col-sm-12 col-md-12 col-lg-4"
@@ -498,6 +498,7 @@ def update_damping_ratio(dampRatio_disabled, dampRatio, c, k, m):
               Output('system_params-VI', 'children'),
               Output('w-slider-VI', 'max'),
               Output('w-slider-VI', 'marks'),
+              Output('w-slider-VI', 'value'),
               Input('submit-button-state-VI', 'n_clicks'),
               Input('w-slider-VI', 'value'),
               State('m-VI', 'value'),
@@ -513,8 +514,8 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, F0, wlim
 
     # This is to change slider limits according to wlim
     slider_marks = {
-                       0: '0 rad/s',
-                       wlim: str(wlim) + ' rad/s',
+                       0: '0 Hz',
+                       wlim: str(wlim) + ' Hz',
                    },
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -533,15 +534,16 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, F0, wlim
         ),
     )
     # Set x-axis title
-    fig.update_xaxes(title_text="Excitation frequency (rad/s)")
+    fig.update_xaxes(title_text="Excitation frequency (Hz)")
 
     # Set y-axes titles
-    fig.update_yaxes(title_text="T = FT/F", secondary_y=False)
-    fig.update_yaxes(title_text="Phase (rad)", secondary_y=True)
+    fig.update_yaxes(title_text="T = FT/F (-)", secondary_y=False)
+    fig.update_yaxes(title_text="Phase (Degrees)", secondary_y=True, showgrid=False)
 
     is_invalid = validate_all_inputsVI(m, k, dampRatio, dampCoeff, F0, wlim)
 
     if (is_invalid):
+        w_slider_value = 0 # Set to 0 so can empty time history plot!
         fig.add_trace(
             go.Scatter(x=[0], y=[0], name="Amplitude"),
             secondary_y=False,
@@ -554,7 +556,7 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, F0, wlim
         input_warning_string = ["Graph was cleared!", html.Br(),
                                 "Please check your inputs before Submitting again!"]
         system_params = [""]
-        return fig, input_warning_string, system_params, wlim, slider_marks[0]
+        return fig, input_warning_string, system_params, wlim, slider_marks[0], w_slider_value
     else:
         Tamp, phase, r, w, wn, wnHz, wd, wdHz = Transmissibility_Solver(m, k, dampRatios, wlim, wantNormalised=False)
         # print(w)
@@ -570,11 +572,12 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, F0, wlim
         )
 
         fig.add_trace(
-            go.Scatter(x=w, y=phase[0], name="Phase"),
+            go.Scatter(x=w, y=-phase[0]*180/np.pi, name="Phase"),
             secondary_y=True,
         )
         # Adding vertical line indicating chosen w using slider
-        fig.add_vline(x=w_slider_value, line_width=2, line_dash="dash", line_color="red")
+        fig.add_vline(x=w_slider_value, line_width=2, line_dash="dash", line_color="red", annotation_text='{} Hz'.format(w_slider_value),  annotation_position="right")
+
 
         input_warning_string = ""
         # Create a string here!!!!!! Make solver function spit out the frequency, Hz and rad/s and max amplitude!!! ====================================
@@ -592,10 +595,10 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, F0, wlim
                          "Natural Frequency, ωn (Hz): " + str(wnHz) + " Hz", html.Br(),
                          ] + dampedNatFreq_string
 
-    return fig, input_warning_string, system_params, wlim, slider_marks[0]
+    return fig, input_warning_string, system_params, wlim, slider_marks[0], w_slider_value
 
 
-def Transmissibility_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormalised=False):
+def Transmissibility_Solver(m=10, k=10, dampRatios=[0.25], wlim=50, wantNormalised=False):
     wn = np.sqrt(k / m)  # Natural Freq of spring mass system
     wnHz = wn / (2 * np.pi)  # Natural freq in Hz
     if 0 < dampRatios[0] < 1:
@@ -605,7 +608,8 @@ def Transmissibility_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormali
         wd = 0
         wdHz = 0
 
-    w = np.linspace(0, wlim, 10000)  # SET LIMIT HERE FOR X AXIS!!!
+    wHz_axis = np.linspace(0, wlim, 1000)  # SET LIMIT HERE FOR X AXIS!!!
+    w = wHz_axis*2*np.pi
     r = w / wn
 
     Tamp = np.zeros((len(dampRatios), len(w)))
@@ -645,7 +649,7 @@ def Transmissibility_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormali
         # phase[phase >= 0] = phase[phase >= 0] - np.pi
         row = row + 1
 
-    return Tamp, phase, r, w, np.round(wn, decimals=2), np.round(wnHz, decimals=2), np.round(wd, decimals=2), np.round(
+    return Tamp, phase, r, wHz_axis, np.round(wn, decimals=2), np.round(wnHz, decimals=2), np.round(wd, decimals=2), np.round(
         wdHz, decimals=2)
 
 
@@ -660,25 +664,36 @@ def Transmissibility_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormali
     State('c-VI', 'value'),
     State('F0-VI', 'value'),
 )
-def update_output(w_slider_value, m, k, dampRatio, c, F0):
-    slider_output_string = 'You have selected "{}" rad/s'.format(w_slider_value)
-    wHz = w_slider_value / (2 * np.pi)
-    t, F, Ft = TransmissibilityTimeHistorySolver(m, k, dampRatio, c, F0, wHz)
+def update_output_time_hist(w_slider_value, m, k, dampRatio, c, F0):
+    slider_output_string = 'You have selected "{}" Hz'.format(w_slider_value)
+
 
     # THIS IS DUAL AXIS PLOT
     # Create figure with secondary y-axis
     timeHistory_plot = make_subplots(specs=[[{"secondary_y": False}]])
 
     # Add traces
-
-    timeHistory_plot.add_trace(
-        go.Scatter(x=t, y=Ft, name="Transmitted Force, Ft"),
-        secondary_y=False,
-    )
-    timeHistory_plot.add_trace(
-        go.Scatter(x=t, y=F, name="Force, F"),
-        secondary_y=False,
-    )
+    if(w_slider_value==0):
+        # Empty time history plot
+        timeHistory_plot.add_trace(
+            go.Scatter(x=[0], y=[0], name="Transmitted Force, Ft"),
+            secondary_y=False,
+        )
+        timeHistory_plot.add_trace(
+            go.Scatter(x=[0], y=[0], name="Force, F"),
+            secondary_y=False,
+        )
+    else:
+        wHz = w_slider_value
+        t, F, Ft = TransmissibilityTimeHistorySolver(m, k, dampRatio, c, F0, wHz)
+        timeHistory_plot.add_trace(
+            go.Scatter(x=t, y=Ft, name="Transmitted Force, Ft"),
+            secondary_y=False,
+        )
+        timeHistory_plot.add_trace(
+            go.Scatter(x=t, y=F, name="Force, F"),
+            secondary_y=False,
+        )
 
     # Add figure title
     timeHistory_plot.update_layout(

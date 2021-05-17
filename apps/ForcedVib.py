@@ -243,8 +243,8 @@ line1_input = dbc.Row([
             ),
             dbc.Col(dbc.InputGroup(
                 [
-                    dbc.InputGroupAddon("ω axis limit , ω (rad/s)", addon_type="prepend"),
-                    dbc.Input(id="wlim-FV", placeholder="s", debounce=True, type="number", value=100, min=0.1, max=100,
+                    dbc.InputGroupAddon("ω axis limit , ω (Hz)", addon_type="prepend"),
+                    dbc.Input(id="wlim-FV", placeholder="s", debounce=True, type="number", value=40, min=0.1, max=100,
                               step=0.1),
                     dbc.InputGroupAddon(
                         wlim_popover,
@@ -272,14 +272,14 @@ layout = dbc.Container([
             [
                 dcc.Slider(id="w-slider",
                            min=0,
-                           max=100,
+                           max=40,
                            step=0.01,
-                           value=50,
+                           value=10,
                            marks={
-                               0: '0 rad/s',
-                               100: '100 rad/s'
+                               0: '0 Hz',
+                               100: '40 Hz'
                            },
-                           updatemode='drag'
+                           updatemode='mouseup'
                            ),
             ],
             className="mb-3 col-12 col-sm-12 col-md-12 col-lg-4"
@@ -552,6 +552,7 @@ def update_damping_ratio(dampRatio_disabled, dampRatio, c, k, m):
               Output('system_params-FV', 'children'),
               Output('w-slider', 'max'),
               Output('w-slider', 'marks'),
+              Output('w-slider', 'value'),
               Input('submit-button-state-FV', 'n_clicks'),
               Input('w-slider', 'value'),
               State('m-FV', 'value'),
@@ -568,8 +569,8 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, x0, F0, 
 
     # This is to change slider limits according to wlim
     slider_marks = {
-                       0: '0 rad/s',
-                       wlim: str(wlim) + ' rad/s',
+                       0: '0 Hz',
+                       wlim: str(wlim) + ' Hz',
                    },
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -588,15 +589,16 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, x0, F0, 
         ),
     )
     # Set x-axis title
-    fig.update_xaxes(title_text="Excitation frequency (rad/s)")
+    fig.update_xaxes(title_text="Excitation frequency (Hz)")
 
     # Set y-axes titles
     fig.update_yaxes(title_text="x/F (m/N)", secondary_y=False)
-    fig.update_yaxes(title_text="Phase (rad)", secondary_y=True)
+    fig.update_yaxes(title_text="Phase (Degrees)", secondary_y=True, showgrid=False)
 
     is_invalid = validate_all_inputsFV(m, k, dampRatio, dampCoeff, x0, F0, wlim)
 
     if (is_invalid):
+        w_slider_value = 0  # Set to 0 so can empty time history plot!
         fig.add_trace(
             go.Scatter(x=[0], y=[0], name="FRF Amplitude"),
             secondary_y=False,
@@ -609,9 +611,10 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, x0, F0, 
         input_warning_string = ["Graph was cleared!", html.Br(),
                                 "Please check your inputs before Submitting again!"]
         system_params = [""]
-        return fig, input_warning_string, system_params, wlim, slider_marks[0]
+        return fig, input_warning_string, system_params, wlim, slider_marks[0], w_slider_value
     else:
-        amp, phase, r, w, wn, wnHz, wd, wdHz = FRF_Solver(m, k, dampRatios, wlim, wantNormalised=False)
+        amp, phase, r, wHz_axis, wn, wnHz, wd, wdHz = FRF_Solver(m, k, dampRatios, wlim, wantNormalised=False)
+
         # print(w)
         # print(amp[0])
 
@@ -620,16 +623,16 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, x0, F0, 
 
         # Add traces
         fig.add_trace(
-            go.Scatter(x=w, y=amp[0], name="FRF Amplitude"),
+            go.Scatter(x=wHz_axis, y=amp[0], name="FRF Amplitude"),
             secondary_y=False,
         )
 
         fig.add_trace(
-            go.Scatter(x=w, y=phase[0], name="FRF Phase"),
+            go.Scatter(x=wHz_axis, y=phase[0]*180/np.pi, name="FRF Phase"),
             secondary_y=True,
         )
         # Adding vertical line indicating chosen w using slider
-        fig.add_vline(x=w_slider_value, line_width=2, line_dash="dash", line_color="red")
+        fig.add_vline(x=w_slider_value, line_width=2, line_dash="dash", line_color="red",annotation_text='{} Hz'.format(w_slider_value),  annotation_position="right")
 
         input_warning_string = ""
         # Create a string here!!!!!! Make solver function spit out the frequency, Hz and rad/s and max amplitude!!! ====================================
@@ -647,7 +650,7 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, x0, F0, 
                          "Natural Frequency, ωn (Hz): " + str(wnHz) + " Hz", html.Br(),
                          ] + dampedNatFreq_string
 
-    return fig, input_warning_string, system_params, wlim, slider_marks[0]
+    return fig, input_warning_string, system_params, wlim, slider_marks[0], w_slider_value
 
 
 def FRF_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormalised=False):
@@ -660,8 +663,9 @@ def FRF_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormalised=False):
         wd = 0
         wdHz = 0
 
-    w = np.linspace(0, wlim, 10000)  # SET LIMIT HERE FOR X AXIS!!!
-    r = w / wn
+    wHz_axis = np.linspace(0, wlim, 1000)  # SET LIMIT HERE FOR X AXIS!!!
+    r = wHz_axis / wn
+    w = 2*np.pi*wHz_axis
 
     amp = np.zeros((len(dampRatios), len(w)))
     phase = np.zeros((len(dampRatios), len(w)))
@@ -683,7 +687,7 @@ def FRF_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormalised=False):
             phase[phase > 0] = phase[phase > 0] - np.pi
             row = row + 1
 
-    return amp, phase, r, w, np.round(wn, decimals=2), np.round(wnHz, decimals=2), np.round(wd, decimals=2), np.round(
+    return amp, phase, r, wHz_axis, np.round(wn, decimals=2), np.round(wnHz, decimals=2), np.round(wd, decimals=2), np.round(
         wdHz, decimals=2)
 
 
@@ -699,10 +703,9 @@ def FRF_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormalised=False):
     State('x0-FV', 'value'),
     State('F0-FV', 'value'),
 )
-def update_output(w_slider_value, m, k, dampRatio, c, x0, F0):
-    slider_output_string = 'You have selected "{}" rad/s'.format(w_slider_value)
-    wHz = w_slider_value / (2 * np.pi)
-    x, t, F, xf, tf = forcedSolver(m, k, dampRatio, c, x0, F0, wHz)
+def update_output_time_hist(w_slider_value, m, k, dampRatio, c, x0, F0):
+    slider_output_string = 'You have selected "{}" Hz'.format(w_slider_value)
+
 
     # THIS IS DUAL AXIS PLOT
     # Create figure with secondary y-axis
@@ -710,14 +713,28 @@ def update_output(w_slider_value, m, k, dampRatio, c, x0, F0):
 
     # Add traces
 
-    timeHistory_plot.add_trace(
-        go.Scatter(x=t, y=x, name="Displacement Response, x"),
-        secondary_y=False,
-    )
-    timeHistory_plot.add_trace(
-        go.Scatter(x=t, y=F, name="Force, F"),
-        secondary_y=True,
-    )
+    if(w_slider_value==0):
+        # Empty time history plot
+        timeHistory_plot.add_trace(
+            go.Scatter(x=[0], y=[0], name="Displacement Response, x"),
+            secondary_y=False,
+        )
+        timeHistory_plot.add_trace(
+            go.Scatter(x=[0], y=[0], name="Force, F"),
+            secondary_y=True,
+        )
+    else:
+        wHz = w_slider_value
+        x, t, F = forcedSolver(m, k, dampRatio, c, x0, F0, wHz)
+        timeHistory_plot.add_trace(
+            go.Scatter(x=t, y=x, name="Displacement Response, x"),
+            secondary_y=False,
+        )
+        timeHistory_plot.add_trace(
+            go.Scatter(x=t, y=F, name="Force, F"),
+            secondary_y=True,
+        )
+        timeHistory_plot.update_yaxes(range=[-1.1 * max(abs(x)), 1.1 * max(abs(x))], secondary_y=False)
 
     # Add figure title
     timeHistory_plot.update_layout(
@@ -734,7 +751,7 @@ def update_output(w_slider_value, m, k, dampRatio, c, x0, F0):
         ),
     )
 
-    timeHistory_plot.update_yaxes(range=[-1.1 * max(abs(x)), 1.1 * max(abs(x))], secondary_y=False)
+
 
     # Set x-axis title
     timeHistory_plot.update_xaxes(title_text="Time (s)")
@@ -754,7 +771,7 @@ def forcedSolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, x0=0, Famp=10, wHz=5):
     wd = wn * np.sqrt(1 - dampRatio ** 2)  # Damped frequency
     w = 2 * np.pi * wHz  # Conv Forced freq from Hz into rad/s
 
-    # Work out Nice time frame using decay to 1%
+    # Work out Nice time frame using decay to 10%
     t_decay = 1 / (dampRatio * wn) * np.log(1 / 0.01)
     tend = np.ceil(t_decay * 1.5)
     t = np.linspace(0, tend, 10000)
@@ -771,11 +788,9 @@ def forcedSolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, x0=0, Famp=10, wHz=5):
     x = np.exp(-dampRatio * wn * t) * (A * np.cos(wd * t) + B * np.sin(wd * t)) + x0f * np.sin(w * t - phasef)
 
     # Only the Forcing amplitude and it's relevant displacment
-    # Shorter time scale, tf so can see phase shift
-    tf = np.linspace(0, 3, 1000)
     F = Famp * np.sin(w * t)
-    xf = x0f * np.sin(w * tf - phasef)
+
 
     print(x)
 
-    return x, t, F, xf, tf
+    return x, t, F
