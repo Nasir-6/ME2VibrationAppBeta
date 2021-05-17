@@ -283,13 +283,7 @@ layout = dbc.Container([
                            ),
             ],
             className="mb-3 col-12 col-sm-12 col-md-12 col-lg-4"
-        ),
-        dbc.Col(
-            [
-                html.P(id="w-slider-output-FV", className=" mt-1 mb-1 text-center"),
-            ],
-            className="mb-1 col-12 col-sm-12 col-md-12 col-lg-8"
-        ),
+        )
     ]),
     dbc.Row([
         dbc.Col(
@@ -693,7 +687,6 @@ def FRF_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormalised=False):
 
 ## SLIDER OUTPUT AND F/X Time history plots
 @app.callback(
-    Output('w-slider-output-FV', 'children'),
     Output('timeHistory-plot-FV', 'figure'),
     Input('w-slider', 'value'),
     State('m-FV', 'value'),
@@ -704,8 +697,6 @@ def FRF_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormalised=False):
     State('F0-FV', 'value'),
 )
 def update_output_time_hist(w_slider_value, m, k, dampRatio, c, x0, F0):
-    slider_output_string = 'You have selected "{}" Hz'.format(w_slider_value)
-
 
     # THIS IS DUAL AXIS PLOT
     # Create figure with secondary y-axis
@@ -762,7 +753,7 @@ def update_output_time_hist(w_slider_value, m, k, dampRatio, c, x0, F0):
 
     # print(timeHistory_plot.layout)
 
-    return slider_output_string, timeHistory_plot
+    return timeHistory_plot
 
 
 def forcedSolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, x0=0, Famp=10, wHz=5):
