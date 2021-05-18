@@ -91,6 +91,8 @@ def display_page(pathname):
         return ForcedVib.layout
     elif pathname == '/apps/VibrationIsolation':
         return VibrationIsolation.layout
+    elif pathname == '/apps/BaseExcitation':
+        return BaseExcitation.layout
     else:
         return '404'
 

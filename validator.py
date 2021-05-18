@@ -118,6 +118,29 @@ def validate_all_inputsVI(mass_input, springConst_input, dampRatio_input, dampCo
     return is_invalid
 
 
+def validate_all_inputsBE(mass_input, springConst_input, dampRatio_input, dampCoeff_input, baseAmp_input, wlim_input):
+
+    is_invalid = False
+
+    # PLEASE ENSURE THAT THE "step", "min", and "max" are correct for their respective inputs!!!
+    err_string, mass_is_invalid = validate_input("mass", mass_input, step=0.001, min=0.001)
+    err_string, k_is_invalid = validate_input("spring constant", springConst_input, step=0.001, min=0.001)
+    err_string, dampRatio_is_invalid = validate_input("damping ratio", dampRatio_input, step=0.001, min=0, max=2)
+    err_string, dampCoeff_is_invalid = validate_input("damping coefficient", dampCoeff_input, step=0.001, min=0)
+    err_string, y0_is_invalid = validate_input("base amplitude", baseAmp_input, step=0.1, min=-10, max=10)
+    err_string, wlim_is_invalid = validate_input("w axis limit", wlim_input, step=0.1, min=0.1, max=100)
+
+    if(mass_is_invalid or k_is_invalid or dampRatio_is_invalid or dampCoeff_is_invalid or y0_is_invalid or wlim_is_invalid):
+        is_invalid = True;
+
+    return is_invalid
+
+
+
+
+
+
+
 
 
 # Function to check for aliasing - raises error message if there is aliasing

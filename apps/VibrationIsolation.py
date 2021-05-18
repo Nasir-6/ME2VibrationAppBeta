@@ -261,7 +261,7 @@ layout = dbc.Container([
     dbc.Row([
         dbc.Col(
             [
-                dcc.Graph(id='Transmissibility_plot', figure={}),
+                dcc.Graph(id='ForceTransmissibility_plot', figure={}),
             ],
             className="mb-1 p-0 col-12 col-sm-12 col-md-12 col-lg-4"
         ),
@@ -486,8 +486,8 @@ def update_damping_ratio(dampRatio_disabled, dampRatio, c, k, m):
 
 # ============ Plotting Graph ========================
 
-# This Function plots the Transmissibility graph
-@app.callback(Output('Transmissibility_plot', 'figure'),
+# This Function plots the ForceTransmissibility graph
+@app.callback(Output('ForceTransmissibility_plot', 'figure'),
               Output('input_warning_string-VI', 'children'),
               Output('system_params-VI', 'children'),
               Output('w-slider-VI', 'max'),
@@ -552,7 +552,7 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, F0, wlim
         system_params = [""]
         return fig, input_warning_string, system_params, wlim, slider_marks[0], w_slider_value
     else:
-        Tamp, phase, r, w, wn, wnHz, wd, wdHz = Transmissibility_Solver(m, k, dampRatios, wlim, wantNormalised=False)
+        Tamp, phase, r, w, wn, wnHz, wd, wdHz = ForceTransmissibility_Solver(m, k, dampRatios, wlim, wantNormalised=False)
         # print(w)
         # print(amp[0])
 
@@ -592,7 +592,7 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, F0, wlim
     return fig, input_warning_string, system_params, wlim, slider_marks[0], w_slider_value
 
 
-def Transmissibility_Solver(m=10, k=10, dampRatios=[0.25], wlim=50, wantNormalised=False):
+def ForceTransmissibility_Solver(m=10, k=10, dampRatios=[0.25], wlim=50, wantNormalised=False):
     wn = np.sqrt(k / m)  # Natural Freq of spring mass system
     wnHz = wn / (2 * np.pi)  # Natural freq in Hz
     if 0 < dampRatios[0] < 1:
@@ -634,12 +634,10 @@ def Transmissibility_Solver(m=10, k=10, dampRatios=[0.25], wlim=50, wantNormalis
         alpha = np.arctan(c * w / k)
         print(w)
         print(w.shape)
-        print(phi.shape)
-        print(alpha.shape)
-        print(phase.shape)
         # Working out Phase
         # theta = phi + alpha  # + alpha as Phi is negative
         phase[row, :] = phi - alpha
+        #phase[row,:] = np.arctan(2 * dampRat * w ** 3 / wn ** 3 / (1 - (1 - 4 * dampRat ** 2) * w ** 2 / wn ** 2))
         # phase[phase >= 0] = phase[phase >= 0] - np.pi
         row = row + 1
 
@@ -677,7 +675,7 @@ def update_output_time_hist(w_slider_value, m, k, dampRatio, c, F0):
         )
     else:
         wHz = w_slider_value
-        t, F, Ft = TransmissibilityTimeHistorySolver(m, k, dampRatio, c, F0, wHz)
+        t, F, Ft = ForceTransmissibilityTimeHistorySolver(m, k, dampRatio, c, F0, wHz)
         timeHistory_plot.add_trace(
             go.Scatter(x=t, y=Ft, name="Transmitted Force, Ft"),
             secondary_y=False,
@@ -715,7 +713,7 @@ def update_output_time_hist(w_slider_value, m, k, dampRatio, c, F0):
     return timeHistory_plot
 
 
-def TransmissibilityTimeHistorySolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, Famp=10, wHz=5):
+def ForceTransmissibilityTimeHistorySolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, Famp=10, wHz=5):
     wn = np.sqrt(k / m)  # Natural Freq of spring mass system
     dampRatio = c / (2 * np.sqrt(k * m))
     c = dampRatio * 2 * np.sqrt(k * m)
@@ -740,6 +738,9 @@ def TransmissibilityTimeHistorySolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, Fam
     # Working out Phase
     # theta = phi + alpha         # + alpha as Phi is negative
     phase = phi - alpha
+
+    # USING TEXT BOOK EQUTION FOR PHASE
+    #phase = np.arctan(2*dampRatio*w**3 / wn**3 /(1-(1-4*dampRatio**2)*w**2/wn**2))
 
     F = Famp * np.sin(w * t)
     Ft = Tamp * Famp * np.sin(w * t - phase)

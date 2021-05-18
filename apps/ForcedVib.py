@@ -759,12 +759,16 @@ def update_output_time_hist(w_slider_value, m, k, dampRatio, c, x0, F0):
 def forcedSolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, x0=0, Famp=10, wHz=5):
     wn = np.sqrt(k / m)  # Natural Freq of spring mass system
     dampRatio = c / (2 * np.sqrt(k * m))
-    wd = wn * np.sqrt(1 - dampRatio ** 2)  # Damped frequency
+    if 0 < dampRatio < 1:
+        wd = wn * np.sqrt(1 - dampRatio ** 2)  # Damped frequency
+    else:
+        wd = 0
     w = 2 * np.pi * wHz  # Conv Forced freq from Hz into rad/s
 
     # Work out Nice time frame using decay to 10%
     t_decay = 1 / (dampRatio * wn) * np.log(1 / 0.01)
     tend = np.ceil(t_decay * 1.5)
+    print(tend)
     t = np.linspace(0, tend, 10000)
     x = t.copy()
 
@@ -774,8 +778,10 @@ def forcedSolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, x0=0, Famp=10, wHz=5):
     phasef = np.arctan(c * w / (k - m * w ** 2))
 
     A = x0 - x0f * np.sin(-phasef)
-    B = (dampRatio * wn * A - x0f * w * np.cos(-phasef)) / wd
-
+    if 0 < dampRatio < 1:
+        B = (dampRatio * wn * A - x0f * w * np.cos(-phasef)) / wd
+    else:
+        B = 0
     x = np.exp(-dampRatio * wn * t) * (A * np.cos(wd * t) + B * np.sin(wd * t)) + x0f * np.sin(w * t - phasef)
 
     # Only the Forcing amplitude and it's relevant displacment
