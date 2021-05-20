@@ -1,3 +1,8 @@
+'''
+This is the SDOF file containing the layouts and functions!? related to the SDOF module.
+'''
+
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -9,9 +14,15 @@ import plotly.express as px
 from validator import *
 from app import app
 
-header = html.H3('Single Degree Of Freedom', className=" mt-2, text-center")
+header = html.H3('Single Degree Of Freedom',
+                 className=" mt-2, text-center")
 about_Text = html.P(["This SDOF solver takes in your parameters and then produces a time history plot of your system. "
-                    "Try it out by changing the input parameters and pressing submit to view your solution at the bottom of the page. To submit feedback for this module please click ", html.A("here", href="https://forms.gle/puL3mKPbchXzsRrV7", target="_blank"), "."])
+                    "Try it out by changing the input parameters and pressing submit to view your solution at the "
+                     "bottom of the page. To submit feedback for this module please click ",
+                     html.A("here",
+                            href="https://forms.gle/puL3mKPbchXzsRrV7",
+                            target="_blank"),
+                     "."])
 
 damp_switch = dbc.FormGroup(
     [
@@ -29,13 +40,14 @@ damp_switch = dbc.FormGroup(
 # ================== ALL POPOVER COMPONENTS
 mass_popover = html.Div(
     [
-        dbc.Button(
-            "?", id="mass-popover-target", color="info",
+        dbc.Button("?",
+                   id="mass-popover-target",
+                   color="info",
         ),
         dbc.Popover(
             [
-                dbc.PopoverHeader("Mass Input"),
-                dbc.PopoverBody([], id="mass_validation_message"),
+            dbc.PopoverHeader("Mass Input"),
+            dbc.PopoverBody([], id="mass_validation_message"),
             ],
             id="mass_popover",
             is_open=False,
@@ -222,7 +234,7 @@ line1_input = dbc.Row([
                 [
                     dbc.InputGroupAddon("Initial Displacement, X0 (m)", addon_type="prepend"),
                     dbc.Input(id="x0", placeholder="m", debounce=True, type="number", value=0.1, min=-10, max=10,
-                              step=0.01),
+                              step=0.001),
                     dbc.InputGroupAddon(
                         initDisp_popover,
                         addon_type="append"
@@ -390,7 +402,7 @@ def dampCoeff_toggle_popover(n, is_open):
     Input("x0", "value")
 )
 def initDisp_input_validator(initDisp_input):
-    err_string, is_invalid = validate_input("initial displacement", initDisp_input, step=0.1, min=-10, max=10)
+    err_string, is_invalid = validate_input("initial displacement", initDisp_input, step=0.001, min=-10, max=10)
     if is_invalid:
         return err_string, 1    # Set nclicks to 1 to call popover toggle
     else:

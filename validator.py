@@ -11,7 +11,7 @@ import dash_html_components as html
 #       Min (num) = The Minimum value must be
 #       Max (num) = Maximum limit
 #   Output
-#       err (string) = Contacatenated String explaining the input issues
+#       err (string) = Concatenated String explaining the input issues
 #       is_invalid (bool) = Flag to raise error - REQUIRED FOR PREVENT SUBMIT
 def validate_input(name, value, step, min, max=None):
 
@@ -33,23 +33,37 @@ def validate_input(name, value, step, min, max=None):
             steperr = "\n    • The minimum increment is " + str(step)
             is_invalid = True
 
-        if(value < min):
-            minerr = "\n    • The value is not smaller than " + str(min)
-            is_invalid = True
-
-        if(max!=None):      # Case of a max limit
-            if(value>max):
-                maxerr = "\n    • The value is not larger than " + str(max)
+        if(max == abs(min)):
+            # In the case of limits are equal state as magnitude!! (Also set minerr to not leave a gap which happens for maxerr)
+            if(abs(value)> max):
+                minerr = "\n    • The magnitude of your value is smaller or equal to " + str(max)
                 is_invalid = True
+        else:
+            # Else just carry on and split min and max limit
+            if(value < min):
+                minerr = "\n    • The value is larger or equal to " + str(min)
+                is_invalid = True
+
+            if(max!=None):      # Case of a max limit else leave it blank
+                if(value>max):
+                    maxerr = "\n    • The value is smaller or equal to " + str(max)
+                    is_invalid = True
 
         if(is_invalid):
             err = ["Your " + name + " input is invalid please ensure:", html.Br(), steperr, html.Br(), minerr, html.Br(), maxerr]
         else:
+            # It is Valid so err message states why it is still valid
             steperr = "\n    • The minimum increment is greater than " + str(step)
-            minerr = "\n    • The value is greater than or equal to " + str(min)
-            if (max != None):  # Case of a max limit
-                maxerr = "\n    •The value is smaller than or equal to the maximum limit of " + str(max)
+            if(max == abs(min)):
+                # In the case of limits are equal state as magnitude!! (Also set minerr to not leave a gap which happens for maxerr)
+                minerr = "\n    • The magnitude of your value is smaller than or equal to " + str(max)
+            else:
+                minerr = "\n    • The value is greater than or equal to " + str(min)
+                if (max != None):  # Case of a max limit
+                    maxerr = "\n    •The value is smaller than or equal to " + str(max)
+
             err = ["Your "+ name + " input is valid as: ", html.Br(), steperr, html.Br(), minerr, html.Br(), maxerr]
+
     return err, is_invalid
 
 
@@ -69,7 +83,7 @@ def validate_all_inputsSDOF(mass_input, springConst_input, dampRatio_input, damp
     err_string, k_is_invalid = validate_input("spring constant", springConst_input, step=0.001, min=0.001)
     err_string, dampRatio_is_invalid = validate_input("damping ratio", dampRatio_input, step=0.001, min=0, max=2)
     err_string, dampCoeff_is_invalid = validate_input("damping coefficient", dampCoeff_input, step=0.001, min=0)
-    err_string, x0_is_invalid = validate_input("initial displacement", initDisp_input, step=0.1, min=-10, max=10)
+    err_string, x0_is_invalid = validate_input("initial displacement", initDisp_input, step=0.001, min=-10, max=10)
     err_string, tSpan_is_invalid = validate_input("time span", tSpan_input, step=0.01, min=0.01, max=360)
     err_string, n_is_invalid = validate_input("number of points", numPts_input, step=1, min=10)
 
@@ -89,9 +103,9 @@ def validate_all_inputsFV(mass_input, springConst_input, dampRatio_input, dampCo
     err_string, k_is_invalid = validate_input("spring constant", springConst_input, step=0.001, min=0.001)
     err_string, dampRatio_is_invalid = validate_input("damping ratio", dampRatio_input, step=0.001, min=0, max=2)
     err_string, dampCoeff_is_invalid = validate_input("damping coefficient", dampCoeff_input, step=0.001, min=0)
-    err_string, x0_is_invalid = validate_input("initial displacement", initDisp_input, step=0.1, min=-10, max=10)
-    err_string, F0_is_invalid = validate_input("force amplitude", forceAmp_input, step=0.1, min=-10, max=10)
-    err_string, wlim_is_invalid = validate_input("w axis limit", wlim_input, step=0.1, min=0.1, max=100)
+    err_string, x0_is_invalid = validate_input("initial displacement", initDisp_input, step=0.001, min=-10, max=10)
+    err_string, F0_is_invalid = validate_input("force amplitude", forceAmp_input, step=0.1, min=-10000, max=10000)
+    err_string, wlim_is_invalid = validate_input("w axis limit", wlim_input, step=0.1, min=0.1, max=10000)
 
     if(mass_is_invalid or k_is_invalid or dampRatio_is_invalid or dampCoeff_is_invalid or x0_is_invalid or F0_is_invalid or wlim_is_invalid):
         is_invalid = True;
@@ -109,8 +123,8 @@ def validate_all_inputsVI(mass_input, springConst_input, dampRatio_input, dampCo
     err_string, k_is_invalid = validate_input("spring constant", springConst_input, step=0.001, min=0.001)
     err_string, dampRatio_is_invalid = validate_input("damping ratio", dampRatio_input, step=0.001, min=0, max=2)
     err_string, dampCoeff_is_invalid = validate_input("damping coefficient", dampCoeff_input, step=0.001, min=0)
-    err_string, F0_is_invalid = validate_input("force amplitude", forceAmp_input, step=0.1, min=-10, max=10)
-    err_string, wlim_is_invalid = validate_input("w axis limit", wlim_input, step=0.1, min=0.1, max=100)
+    err_string, F0_is_invalid = validate_input("force amplitude", forceAmp_input, step=0.1, min=-10000, max=10000)
+    err_string, wlim_is_invalid = validate_input("w axis limit", wlim_input, step=0.1, min=0.1, max=10000)
 
     if(mass_is_invalid or k_is_invalid or dampRatio_is_invalid or dampCoeff_is_invalid or F0_is_invalid or wlim_is_invalid):
         is_invalid = True;
@@ -127,8 +141,8 @@ def validate_all_inputsBE(mass_input, springConst_input, dampRatio_input, dampCo
     err_string, k_is_invalid = validate_input("spring constant", springConst_input, step=0.001, min=0.001)
     err_string, dampRatio_is_invalid = validate_input("damping ratio", dampRatio_input, step=0.001, min=0, max=2)
     err_string, dampCoeff_is_invalid = validate_input("damping coefficient", dampCoeff_input, step=0.001, min=0)
-    err_string, y0_is_invalid = validate_input("base amplitude", baseAmp_input, step=0.1, min=-10, max=10)
-    err_string, wlim_is_invalid = validate_input("w axis limit", wlim_input, step=0.1, min=0.1, max=100)
+    err_string, y0_is_invalid = validate_input("base amplitude", baseAmp_input, step=0.001, min=-10, max=10)
+    err_string, wlim_is_invalid = validate_input("w axis limit", wlim_input, step=0.1, min=0.1, max=10000)
 
     if(mass_is_invalid or k_is_invalid or dampRatio_is_invalid or dampCoeff_is_invalid or y0_is_invalid or wlim_is_invalid):
         is_invalid = True;

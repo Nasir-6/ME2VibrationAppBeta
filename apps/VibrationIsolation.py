@@ -202,7 +202,7 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Forcing Amplitude, F0 (N)", addon_type="prepend"),
-                    dbc.Input(id="F0-VI", placeholder="N", debounce=True, type="number", value=0.1, min=-10, max=10,
+                    dbc.Input(id="F0-VI", placeholder="N", debounce=True, type="number", value=0.1, min=-10000, max=10000,
                               step=0.01),
                     dbc.InputGroupAddon(
                         forceAmp_popover,
@@ -217,7 +217,7 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("ω axis limit , ω (Hz)", addon_type="prepend"),
-                    dbc.Input(id="wlim-VI", placeholder="s", debounce=True, type="number", value=40, min=0.1, max=100,
+                    dbc.Input(id="wlim-VI", placeholder="s", debounce=True, type="number", value=40, min=0.1, max=10000,
                               step=0.1),
                     dbc.InputGroupAddon(
                         wlim_popover,
@@ -395,7 +395,7 @@ def dampCoeff_toggle_popover(n, is_open):
     Input("F0-VI", "value")
 )
 def forceAmp_input_validator(forceAmp_input):
-    err_string, is_invalid = validate_input("forcing amplitude", forceAmp_input, step=0.1, min=-10, max=10)
+    err_string, is_invalid = validate_input("forcing amplitude", forceAmp_input, step=0.1, min=-10000, max=10000)
     if is_invalid:
         return err_string, 1  # Set nclicks to 1 to call popover toggle
     else:
@@ -422,7 +422,7 @@ def forceAmp_toggle_popover(n, is_open):
     Input("wlim-VI", "value")
 )
 def wlim_input_validator(wlim_input):
-    err_string, is_invalid = validate_input("ω axis limit ", wlim_input, step=0.1, min=0.1, max=100)
+    err_string, is_invalid = validate_input("ω axis limit ", wlim_input, step=0.1, min=0.1, max=10000)
     if is_invalid:
         return err_string, 1  # Set nclicks to 1 to call popover toggle
     else:

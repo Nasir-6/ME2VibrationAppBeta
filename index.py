@@ -1,3 +1,10 @@
+'''
+The Index file is the startup file. It contains the common layout which at this point in time is the navbar only.
+It Contains all the page paths and is the place to add other pages if required. Note how the different layouts for each
+page is defined in it's own file and is only called here.
+'''
+
+
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State

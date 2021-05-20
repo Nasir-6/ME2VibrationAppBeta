@@ -219,7 +219,7 @@ line1_input = dbc.Row([
                 [
                     dbc.InputGroupAddon("Initial Displacement, X0 (m)", addon_type="prepend"),
                     dbc.Input(id="x0-FV", placeholder="m", debounce=True, type="number", value=0.1, min=-10, max=10,
-                              step=0.01),
+                              step=0.001),
                     dbc.InputGroupAddon(
                         initDisp_popover,
                         addon_type="append"
@@ -229,7 +229,7 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Forcing Amplitude, F0 (N)", addon_type="prepend"),
-                    dbc.Input(id="F0-FV", placeholder="N", debounce=True, type="number", value=0.1, min=-10, max=10,
+                    dbc.Input(id="F0-FV", placeholder="N", debounce=True, type="number", value=0.1, min=-10000, max=10000,
                               step=0.01),
                     dbc.InputGroupAddon(
                         forceAmp_popover,
@@ -244,7 +244,7 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("ω axis limit , ω (Hz)", addon_type="prepend"),
-                    dbc.Input(id="wlim-FV", placeholder="s", debounce=True, type="number", value=40, min=0.1, max=100,
+                    dbc.Input(id="wlim-FV", placeholder="s", debounce=True, type="number", value=40, min=0.1, max=10000,
                               step=0.1),
                     dbc.InputGroupAddon(
                         wlim_popover,
@@ -422,7 +422,7 @@ def dampCoeff_toggle_popover(n, is_open):
     Input("x0-FV", "value")
 )
 def initDisp_input_validator(initDisp_input):
-    err_string, is_invalid = validate_input("initial displacement", initDisp_input, step=0.1, min=-10, max=10)
+    err_string, is_invalid = validate_input("initial displacement", initDisp_input, step=0.001, min=-10, max=10)
     if is_invalid:
         return err_string, 1  # Set nclicks to 1 to call popover toggle
     else:
@@ -449,7 +449,7 @@ def initDisp_toggle_popover(n, is_open):
     Input("F0-FV", "value")
 )
 def forceAmp_input_validator(forceAmp_input):
-    err_string, is_invalid = validate_input("forcing amplitude", forceAmp_input, step=0.1, min=-10, max=10)
+    err_string, is_invalid = validate_input("forcing amplitude", forceAmp_input, step=0.1, min=-10000, max=10000)
     if is_invalid:
         return err_string, 1  # Set nclicks to 1 to call popover toggle
     else:
@@ -476,7 +476,7 @@ def forceAmp_toggle_popover(n, is_open):
     Input("wlim-FV", "value")
 )
 def wlim_input_validator(wlim_input):
-    err_string, is_invalid = validate_input("ω axis limit ", wlim_input, step=0.1, min=0.1, max=100)
+    err_string, is_invalid = validate_input("ω axis limit ", wlim_input, step=0.1, min=0.1, max=10000)
     if is_invalid:
         return err_string, 1  # Set nclicks to 1 to call popover toggle
     else:
@@ -767,8 +767,8 @@ def forcedSolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, x0=0, Famp=10, wHz=5):
 
     # Work out Nice time frame using decay to 10%
     t_decay = 1 / (dampRatio * wn) * np.log(1 / 0.01)
-    tend = np.ceil(t_decay * 1.5)
-    print(tend)
+    tend = t_decay * 1.25
+    print("Decay Time is {} seconds".format(str(t_decay)))
     t = np.linspace(0, tend, 10000)
     x = t.copy()
 
