@@ -190,7 +190,7 @@ def validate_aliasing(m, k, tSpan, nPts):
     else:
         aliasing_warning = ""
 
-    print(aliasing_warning)
+    #print(aliasing_warning)
 
     return aliasing_warning
 

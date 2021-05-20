@@ -666,7 +666,7 @@ def FRF_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormalised=False):
     if wantNormalised:
         row = 0
         for dampRat in dampRatios:
-            print(dampRat)
+
             amp[row, :] = 1 / np.sqrt((1 - r ** 2) ** 2 + (2 * dampRat * r) ** 2)
             phase[row, :] = np.arctan(-2 * dampRat * r / (1 - r ** 2))
             phase[phase > 0] = phase[phase > 0] - np.pi
@@ -675,7 +675,7 @@ def FRF_Solver(m=10, k=10, dampRatios=[0.25], wlim=100, wantNormalised=False):
         row = 0
         for dampRat in dampRatios:
             c = dampRat * 2 * np.sqrt(k * m)
-            # print(dampRat)
+
             amp[row, :] = 1 / np.sqrt((k - m * w ** 2) ** 2 + (c * w) ** 2)
             phase[row, :] = np.arctan(-c * w / (k - m * w ** 2))
             phase[phase > 0] = phase[phase > 0] - np.pi
@@ -756,9 +756,8 @@ def update_output_time_hist(w_slider_value, m, k, dampRatio, c, x0, F0):
     return timeHistory_plot
 
 
-def forcedSolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, x0=0, Famp=10, wHz=5):
+def forcedSolver(m=1, k=1000, dampRatio=0.1, c=6.325, x0=0.1, Famp=0.1, wHz=10):
     wn = np.sqrt(k / m)  # Natural Freq of spring mass system
-    dampRatio = c / (2 * np.sqrt(k * m))
     if 0 < dampRatio < 1:
         wd = wn * np.sqrt(1 - dampRatio ** 2)  # Damped frequency
     else:
@@ -768,7 +767,6 @@ def forcedSolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, x0=0, Famp=10, wHz=5):
     # Work out Nice time frame using decay to 10%
     t_decay = 1 / (dampRatio * wn) * np.log(1 / 0.01)
     tend = t_decay * 1.25
-    print("Decay Time is {} seconds".format(str(t_decay)))
     t = np.linspace(0, tend, 10000)
     x = t.copy()
 
@@ -788,6 +786,5 @@ def forcedSolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, x0=0, Famp=10, wHz=5):
     F = Famp * np.sin(w * t)
 
 
-    print(x)
-
     return x, t, F
+

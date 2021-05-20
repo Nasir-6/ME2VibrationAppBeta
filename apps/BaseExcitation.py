@@ -639,8 +639,7 @@ def MotionTransmissibility_Solver(m=10, k=10, dampRatios=[0.25], wlim=50, wantNo
                 i=i+1
 
         gamma = np.arctan(c * w / k)
-        print(w)
-        print(w.shape)
+
         # Working out Phase
         # theta = phi + alpha  # + alpha as Phi is negative
         phase[row, :] = beta - gamma
@@ -721,8 +720,6 @@ def update_output_time_hist(w_slider_value, m, k, dampRatio, c, y0):
 
 def MotionTransmissibilityTimeHistorySolver(m=10, k=10 ** 6, dampRatio=0.1, c=100, yAmp=10, wHz=5):
     wn = np.sqrt(k / m)  # Natural Freq of spring mass system
-    dampRatio = c / (2 * np.sqrt(k * m))
-    c = dampRatio * 2 * np.sqrt(k * m)
     wd = wn * np.sqrt(1 - dampRatio ** 2)  # Damped frequency
     w = 2 * np.pi * wHz  # Conv Forced freq from Hz into rad/s
 
