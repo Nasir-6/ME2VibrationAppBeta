@@ -35,8 +35,6 @@ nav_bar_links = dbc.Row(
     className="ml-auto flex-nowrap mt-3 mt-md-0",
     align="center",
 )
-
-
 navbar = dbc.Navbar(
     [
         html.A(
@@ -48,7 +46,7 @@ navbar = dbc.Navbar(
                 align="center",
                 no_gutters=True,
             ),
-            href="https://plot.ly",   #Change LINK TO MAIN PAGE!!!
+            href="https://me2vibrationsappbeta.herokuapp.com/apps/SDOF",
         ),
         dbc.NavbarToggler(id="navbar-toggler"),
         # These are all the links to each app page, which collapses at small screens
@@ -61,13 +59,16 @@ navbar = dbc.Navbar(
 
 
 # Structure of the App
-app.layout = dbc.Container([
+app.layout = dbc.Container(
+    [
     navbar,
     # dcc location is the way we change pages
     dcc.Location(id='url', pathname='', refresh=False),
     # All the content of each app goes in this DIV!!!!
     html.Div(id='page-content')
-], fluid="True")
+    ],
+    fluid="True"
+)
 
 
 
@@ -102,6 +103,7 @@ def display_page(pathname):
         return BaseExcitation.layout
     else:
         return '404'
+
 
 
 if __name__ == '__main__':

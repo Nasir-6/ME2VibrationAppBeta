@@ -192,7 +192,7 @@ line1_input = dbc.Row([
             dbc.Col(damp_switch, width=12),
             dbc.Col(dbc.InputGroup(
                 [
-                    dbc.InputGroupAddon("Damping Ratio", addon_type="prepend"),
+                    dbc.InputGroupAddon("Damping Ratio, ζ", addon_type="prepend"),
                     dbc.Input(id="dampRatio-FV", placeholder="", debounce=True, type="number", value=0.1, min=0, max=2,
                               step=0.001),
                     dbc.InputGroupAddon(
