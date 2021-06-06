@@ -169,7 +169,7 @@ numPts_popover = html.Div(
 line1_input = dbc.Row([
 
     dbc.Col(
-        html.Img(src=app.get_asset_url('SDOFPic.png'),
+        html.Img(src=app.get_asset_url('SDOF_Pic.png'),
                  className="img-fluid"),
         className="col-12 col-sm-5 col-md-3 col-lg-3"),
     dbc.Col([
