@@ -16,7 +16,7 @@ from app import app
 header = html.H3('Forced Vibration', className=" mt-2, text-center")
 about_Text = html.P([
                         "This Forced Vibrations solver takes in your parameters and then produces an FRF response. You can then choose a frequency to view the time history plot at that specific frequency."
-                        "Try it out by changing the input parameters and pressing submit to view your solution at the bottom of the page.)"])
+                        "Try it out by changing the input parameters and pressing submit to view your solution at the bottom of the page."])
 
 damp_switch = dbc.FormGroup(
     [

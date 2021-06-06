@@ -16,7 +16,7 @@ from app import app
 header = html.H3('Vibration Isolation', className=" mt-2, text-center")
 about_Text = html.P([
                         "This Vibrations Isolation solver takes in your parameters and then produces an Transmissibility curve. You can then choose a frequency to view the time history plot at that specific frequency."
-                        "Try it out by changing the input parameters and pressing submit to view your solution at the bottom of the page.)"])
+                        "Try it out by changing the input parameters and pressing submit to view your solution at the bottom of the page."])
 
 damp_switch = dbc.FormGroup(
     [

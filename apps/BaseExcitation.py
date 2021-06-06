@@ -16,7 +16,7 @@ from app import app
 header = html.H3('Base Excitation', className=" mt-2, text-center")
 about_Text = html.P([
                         "This Base Excitation solver takes in your parameters and then produces a motion transmissibility curve. You can then choose a frequency to view the time history plot at that specific frequency."
-                        "Try it out by changing the input parameters and pressing submit to view your solution at the bottom of the page.)"])
+                        "Try it out by changing the input parameters and pressing submit to view your solution at the bottom of the page."])
 
 damp_switch = dbc.FormGroup(
     [
