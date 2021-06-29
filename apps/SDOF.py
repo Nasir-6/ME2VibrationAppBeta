@@ -1,5 +1,5 @@
 '''
-This is the SDOF file containing the layouts and functions!? related to the SDOF module.
+This is the SDOF file containing the layouts and functions related to the SDOF module.
 '''
 
 
@@ -14,8 +14,10 @@ import plotly.express as px
 from validator import *
 from app import app
 
-header = html.H3('Single Degree Of Freedom',
-                 className=" mt-2, text-center")
+header = html.H3(
+    'Single Degree Of Freedom',
+    className=" mt-2, text-center")
+
 about_Text = html.P(["This SDOF solver takes in your parameters and then produces a time history plot of your system. "
                     "Try it out by changing the input parameters and pressing submit to view your solution at the "
                      "bottom of the page. To submit feedback for this module please click ",
@@ -37,7 +39,11 @@ damp_switch = dbc.FormGroup(
     ]
 )
 
-# ================== ALL POPOVER COMPONENTS
+
+''' The Following are the all the popover components. 
+They consist of the blue ? button, The popover itself with the header and the validation message 
+telling the user why/why not the current input is valid'''
+
 mass_popover = html.Div(
     [
         dbc.Button("?",
@@ -107,37 +113,37 @@ dampCoeff_popover = html.Div(
     ],
 )
 
-initDisp_popover = html.Div(
+initialDisplacement_popover = html.Div(
     [
         dbc.Button(
-            "?", id="initDisp-popover-target", color="info",
+            "?", id="initialDisplacement-popover-target", color="info",
         ),
         dbc.Popover(
             [
                 dbc.PopoverHeader("Initial Displacement Input"),
-                dbc.PopoverBody([], id="initDisp_validation_message"),
+                dbc.PopoverBody([], id="initialDisplacement_validation_message"),
             ],
-            id="initDisp_popover",
+            id="initialDisplacement_popover",
             is_open=False,
-            target="initDisp-popover-target",
+            target="initialDisplacement-popover-target",
         ),
     ],
 )
 
 
-tSpan_popover = html.Div(
+timeSpan_popover = html.Div(
     [
         dbc.Button(
-            "?", id="tSpan-popover-target", color="info",
+            "?", id="timeSpan-popover-target", color="info",
         ),
         dbc.Popover(
             [
                 dbc.PopoverHeader("Time Span Input"),
-                dbc.PopoverBody([], id="tSpan_validation_message"),
+                dbc.PopoverBody([], id="timeSpan_validation_message"),
             ],
-            id="tSpan_popover",
+            id="timeSpan_popover",
             is_open=False,
-            target="tSpan-popover-target",
+            target="timeSpan-popover-target",
         ),
     ],
 )
@@ -161,12 +167,8 @@ numPts_popover = html.Div(
 )
 
 
-
-
-
-
-
-line1_input = dbc.Row([
+''' This is the set of inputs for the 1st system. It was done like this to accommodate multiple system inputs.'''
+system1_input = dbc.Row([
 
     dbc.Col(
         html.Img(src=app.get_asset_url('SDOF_Pic.png'),
@@ -192,10 +194,12 @@ line1_input = dbc.Row([
                     ),
                 ],
             ), className="mb-1 col-12 col-md-12 col-lg-6"),
+
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Spring Constant, k (N/m)", addon_type="prepend"),
-                    dbc.Input(id="k", placeholder="N/m", debounce=True, type="number",
+                    dbc.Input(id="k", placeholder="N/m",
+                              debounce=True, type="number",
                               value=1000, min=0.001, step=0.001),
                     dbc.InputGroupAddon(
                         springConst_popover,
@@ -208,8 +212,9 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Damping Ratio, ζ", addon_type="prepend"),
-                    dbc.Input(id="dampRatio", placeholder="", debounce=True, type="number", value=0.1, min=0, max=2,
-                              step=0.001),
+                    dbc.Input(id="dampRatio", placeholder="",
+                              debounce=True, type="number",
+                              value=0.1, min=0, max=2, step=0.001),
                     dbc.InputGroupAddon(
                         dampRatio_popover,
                         addon_type="append"
@@ -219,7 +224,9 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Damping Coefficient, c (Ns/m)", addon_type="prepend"),
-                    dbc.Input(id="c", placeholder="Ns/m", debounce=True, type="number", value=1, min=0, step=0.001),
+                    dbc.Input(id="c", placeholder="Ns/m",
+                              debounce=True, type="number",
+                              value=1, min=0, step=0.001),
                     dbc.InputGroupAddon(
                         dampCoeff_popover,
                         addon_type="append"
@@ -233,10 +240,11 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Initial Displacement, X0 (m)", addon_type="prepend"),
-                    dbc.Input(id="x0", placeholder="m", debounce=True, type="number", value=0.1, min=-10, max=10,
-                              step=0.001),
+                    dbc.Input(id="x0", placeholder="m",
+                              debounce=True, type="number",
+                              value=0.1, min=-10, max=10, step=0.001),
                     dbc.InputGroupAddon(
-                        initDisp_popover,
+                        initialDisplacement_popover,
                         addon_type="append"
                     )
                 ],
@@ -248,9 +256,11 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Time Span, t (s)", addon_type="prepend"),
-                    dbc.Input(id="tend", placeholder="s", debounce=True,  type="number", value=2, min=0.01, max=360, step=0.01),
+                    dbc.Input(id="tend", placeholder="s",
+                              debounce=True,  type="number",
+                              value=2, min=0.01, max=360, step=0.01),
                     dbc.InputGroupAddon(
-                        tSpan_popover,
+                        timeSpan_popover,
                         addon_type="append"
                     )
                 ],
@@ -258,7 +268,9 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Number of Points", addon_type="prepend"),
-                    dbc.Input(id="n", placeholder="", debounce=True,  type="number", min=10, step=1, value=1000),
+                    dbc.Input(id="n", placeholder="",
+                              debounce=True,  type="number",
+                              min=10, step=1, value=1000),
                     dbc.InputGroupAddon(
                         numPts_popover,
                         addon_type="append"
@@ -271,9 +283,9 @@ line1_input = dbc.Row([
             ),
             dbc.Button("Submit", color="secondary", id='submit-button-state', size="sm")
         ]),
+
         dbc.Row(html.P(id="input_warning_string", className="text-danger")),
         dbc.Row(html.P(id="system_params")),
-
 
     ]),
 
@@ -281,10 +293,11 @@ line1_input = dbc.Row([
 
 
 
+'''This is where the layout is formed from the components.'''
 layout = dbc.Container([
     header,
     about_Text,
-    line1_input,
+    system1_input,
     html.H3("Time history plot of your solution", className=" mt-1 mb-1 text-center"),
     dcc.Graph(id='SDOF_plot', figure={}),
 
@@ -294,8 +307,12 @@ layout = dbc.Container([
 
 
 # ALL APP CALLBACKS
+'''Here are all the app callbacks used. Note it is important that the id matches up to the Output/Input name'''
 
-# INPUT VALIDATORS
+
+# ALL INPUT VALIDATORS and popover functions
+# Each input has it's own validator passing in it's desired values to be checked against.
+# They also have their own popover toggle function
 @app.callback(
     Output("mass_validation_message", "children"),
     Output("mass-popover-target", "n_clicks"),
@@ -310,6 +327,7 @@ def mass_input_validator(mass_input):
 
 
 # Toggle mass popover with button (or validator callback above!!)
+# Note the n_clicks is set as an Input to ensure updating if changed
 @app.callback(
     Output("mass_popover", "is_open"),
     [Input("mass-popover-target", "n_clicks")],
@@ -397,25 +415,25 @@ def dampCoeff_toggle_popover(n, is_open):
 
 
 @app.callback(
-    Output("initDisp_validation_message", "children"),
-    Output("initDisp-popover-target", "n_clicks"),
+    Output("initialDisplacement_validation_message", "children"),
+    Output("initialDisplacement-popover-target", "n_clicks"),
     Input("x0", "value")
 )
-def initDisp_input_validator(initDisp_input):
-    err_string, is_invalid = validate_input("initial displacement", initDisp_input, step=0.001, min=-10, max=10)
+def initialDisplacement_input_validator(initialDisplacement_input):
+    err_string, is_invalid = validate_input("initial displacement", initialDisplacement_input, step=0.001, min=-10, max=10)
     if is_invalid:
         return err_string, 1    # Set nclicks to 1 to call popover toggle
     else:
         return err_string, 0    # Set nclicks to 0 to prevent popover
 
 
-# Toggle initDisp popover with button (or validator callback above!!)
+# Toggle initialDisplacement popover with button (or validator callback above!!)
 @app.callback(
-    Output("initDisp_popover", "is_open"),
-    [Input("initDisp-popover-target", "n_clicks")],
-    [State("initDisp_popover", "is_open")],
+    Output("initialDisplacement_popover", "is_open"),
+    [Input("initialDisplacement-popover-target", "n_clicks")],
+    [State("initialDisplacement_popover", "is_open")],
 )
-def initDisp_toggle_popover(n, is_open):
+def initialDisplacement_toggle_popover(n, is_open):
     if n:
         return not is_open
     return is_open
@@ -423,25 +441,25 @@ def initDisp_toggle_popover(n, is_open):
 
 
 @app.callback(
-    Output("tSpan_validation_message", "children"),
-    Output("tSpan-popover-target", "n_clicks"),
+    Output("timeSpan_validation_message", "children"),
+    Output("timeSpan-popover-target", "n_clicks"),
     Input("tend", "value")
 )
-def tSpan_input_validator(tSpan_input):
-    err_string, is_invalid = validate_input("time span", tSpan_input, step=0.01, min=0.01, max=360)
+def timeSpan_input_validator(timeSpan_input):
+    err_string, is_invalid = validate_input("time span", timeSpan_input, step=0.01, min=0.01, max=360)
     if is_invalid:
         return err_string, 1    # Set nclicks to 1 to call popover toggle
     else:
         return err_string, 0    # Set nclicks to 0 to prevent popover
 
 
-# Toggle tSpan popover with button (or validator callback above!!)
+# Toggle timeSpan popover with button (or validator callback above!!)
 @app.callback(
-    Output("tSpan_popover", "is_open"),
-    [Input("tSpan-popover-target", "n_clicks")],
-    [State("tSpan_popover", "is_open")],
+    Output("timeSpan_popover", "is_open"),
+    [Input("timeSpan-popover-target", "n_clicks")],
+    [State("timeSpan_popover", "is_open")],
 )
-def tSpan_toggle_popover(n, is_open):
+def timeSpan_toggle_popover(n, is_open):
     if n:
         return not is_open
     return is_open
@@ -482,8 +500,8 @@ def numPts_toggle_popover(n, is_open):
      Input("n", "value"),
      ]
 )
-def aliasing_check(m, k, tSpan, nPts):
-    aliasing_warning = validate_aliasing(m, k, tSpan, nPts)
+def aliasing_check(m, k, timeSpan, nPts):
+    aliasing_warning = validate_aliasing(m, k, timeSpan, nPts)
     return aliasing_warning
 
 
@@ -540,7 +558,27 @@ def update_damping_ratio(dampRatio_disabled, dampRatio, c, k, m):
 
 # ============ Plotting Graph ========================
 
-# This Function plots the graph
+'''
+This update output function takes in the inputs, passes it to the validator and solver and then updates the graphs/text
+using the solutions/values it gets back.
+  Inputs
+  n_clicks, m, k, dampRatio, dampCoeff, x0, tend, n
+      n_clicks (num) = number of clicks of the submit button (NOTE: This is used as the only Input in order to update 
+                       the outputs when the submit button is clicked.)  
+      m (num) = mass (kg)
+      k (num) = Stiffness constant (N/m)
+      dampRatio (num) = The Damping Ratio
+      dampCoeff (num) = The Damping Coefficient (Ns/m) 
+      x0 (num) = The initial displacement of the mass (m)
+      tend (num) = The time to perform the calculation upto (s)
+      n (num) = The number of points to use for the plot/array
+  Output
+     fig, input_warning_string, system_params
+     fig (Figure object) = The object that holds all the parameters to produce the figure
+     input_warning_string (string) = A string that returns any warning messages if any in red 
+     system_params (string array) = An array which concatenates any important parameters of the system to be 
+                                    displayed as text
+'''
 @app.callback(Output('SDOF_plot', 'figure'),
               Output('input_warning_string', 'children'),
               Output('system_params', 'children'),
@@ -556,14 +594,17 @@ def update_output(n_clicks, m, k, dampRatio, dampCoeff, x0, tend, n):
 
     # First validate inputs
     is_invalid = validate_all_inputsSDOF(m,k,dampRatio, dampCoeff, x0, tend, n)
+
     if(is_invalid):
+        # Reset Graphs
         fig = px.line(x=[0], y=[0],
                       labels=dict(
                           x="Time (sec)",
                           y="Displacement, x (m)"
                       )
                       )
-        input_warning_string = ["Graph was cleared!", html.Br(),
+        input_warning_string = ["Graph was cleared!",
+                                html.Br(),
                                 "Please check your inputs before Submitting again!"]
         system_params = [""]
         return fig, input_warning_string, system_params
@@ -596,6 +637,25 @@ def update_output(n_clicks, m, k, dampRatio, dampCoeff, x0, tend, n):
 
         return fig, input_warning_string, system_params
 
+'''
+This is the actual SDOF Solver which takes in the inputs and returns a solution along with any significant values
+  Inputs
+      m (num) = Mass (kg)
+      k (num) = Stiffness constant (N/m)
+      dampRatio (num) = The Damping Ratio 
+      x0 (num) = The initial displacement of the mass (m)
+      tend (num) = The time to perform the calculation upto (s)
+      n (num) = The number of points to use for the plot/array
+  Output
+      x (array) = The displacement solution over time (m)
+      t (array) = The time array for the solution (s)
+      wn (num) = The natural frequency of the system (rad/s)
+      wnHz (num) = The natural frequency of the system in Hz (Hz)
+      wd (num) = The damped natural frequency of the system (rad/s)
+      wd (num) = The damped natural frequency of the system in Hz (Hz)
+      maxAmp (num) = The maximum amplitude of the system response (m)
+      solutionType (string) = A string telling the user what type of solution the response is
+'''
 def SDOF_solver(m, k, dampRatio, x0, tend, n):
     wn = np.sqrt(k / m)  # Natural Freq of spring mass system
     wnHz = wn/(2*np.pi)     # Natural freq in Hz

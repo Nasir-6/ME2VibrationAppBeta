@@ -12,6 +12,7 @@ import dash_bootstrap_components as dbc
 
 from app import app
 from app import server
+
 # Import all the diff app pages
 from apps import SDOF, ForcedVib, VibrationIsolation, BaseExcitation
 
@@ -87,7 +88,7 @@ def toggle_navbar_collapse(n, is_open):
 
 
 
-# Callback to change pages
+# Callback to change pages depending on current path on URL
 @app.callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
 def display_page(pathname):

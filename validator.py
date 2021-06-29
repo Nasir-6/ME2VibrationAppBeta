@@ -1,3 +1,4 @@
+
 import numpy as np
 from decimal import *
 import dash_html_components as html
@@ -9,10 +10,11 @@ import dash_html_components as html
 #       Value (num) = The value passed in via Input
 #       Step (num) = The increments the input can go up via
 #       Min (num) = The Minimum value must be
-#       Max (num) = Maximum limit
+#       Max (num) = Maximum limit (NOTE: Set to "None" as default value as some don't have an upper limit)
 #   Output
-#       err (string) = Concatenated String explaining the input issues
+#       err (string) = Concatenated String explaining the input issues - This is used as the validation message
 #       is_invalid (bool) = Flag to raise error - REQUIRED FOR PREVENT SUBMIT
+
 def validate_input(name, value, step, min, max=None):
 
     # Initialise is_invalid flag & error string
@@ -67,14 +69,15 @@ def validate_input(name, value, step, min, max=None):
     return err, is_invalid
 
 
-# Function to validate all inputs - THIS IS KEY FOR PREVENT UPDATE
+# Functions to validate all inputs - THIS IS KEY FOR PREVENT UPDATE
+# Require one for each module. Make sure to use the correct one for each module page/script.
+# First one is for SDOF module.
 #   Inputs
 #       All inputs (THIS IS CURRENTLY FOR SDOF - NEED TO ALTER FOR FORCED VIB ETC.!!!)
-
 #   Outputs
 #       is_invalid (bool) = A variable to return whether a single input is invalid (TRUE) or if all inputs are valid (FALSE)
 #                           This is required to prevent submit!!!
-def validate_all_inputsSDOF(mass_input, springConst_input, dampRatio_input, dampCoeff_input, initDisp_input, tSpan_input, numPts_input):
+def validate_all_inputsSDOF(mass_input, springConst_input, dampRatio_input, dampCoeff_input, initialDisplacement_input, tSpan_input, numPts_input):
 
     is_invalid = False
 
@@ -83,7 +86,7 @@ def validate_all_inputsSDOF(mass_input, springConst_input, dampRatio_input, damp
     err_string, k_is_invalid = validate_input("spring constant", springConst_input, step=0.001, min=0.001)
     err_string, dampRatio_is_invalid = validate_input("damping ratio", dampRatio_input, step=0.001, min=0, max=2)
     err_string, dampCoeff_is_invalid = validate_input("damping coefficient", dampCoeff_input, step=0.001, min=0)
-    err_string, x0_is_invalid = validate_input("initial displacement", initDisp_input, step=0.001, min=-10, max=10)
+    err_string, x0_is_invalid = validate_input("initial displacement", initialDisplacement_input, step=0.001, min=-10, max=10)
     err_string, tSpan_is_invalid = validate_input("time span", tSpan_input, step=0.01, min=0.01, max=360)
     err_string, n_is_invalid = validate_input("number of points", numPts_input, step=1, min=10)
 
@@ -93,28 +96,8 @@ def validate_all_inputsSDOF(mass_input, springConst_input, dampRatio_input, damp
     return is_invalid
 
 
-
-def validate_all_inputsFV(mass_input, springConst_input, dampRatio_input, dampCoeff_input, initDisp_input, forceAmp_input, wlim_input):
-
-    is_invalid = False
-
-    # PLEASE ENSURE THAT THE "step", "min", and "max" are correct for their respective inputs!!!
-    err_string, mass_is_invalid = validate_input("mass", mass_input, step=0.001, min=0.001)
-    err_string, k_is_invalid = validate_input("spring constant", springConst_input, step=0.001, min=0.001)
-    err_string, dampRatio_is_invalid = validate_input("damping ratio", dampRatio_input, step=0.001, min=0, max=2)
-    err_string, dampCoeff_is_invalid = validate_input("damping coefficient", dampCoeff_input, step=0.001, min=0)
-    err_string, x0_is_invalid = validate_input("initial displacement", initDisp_input, step=0.001, min=-10, max=10)
-    err_string, F0_is_invalid = validate_input("force amplitude", forceAmp_input, step=0.1, min=-10000, max=10000)
-    err_string, wlim_is_invalid = validate_input("w axis limit", wlim_input, step=0.1, min=0.1, max=10000)
-
-    if(mass_is_invalid or k_is_invalid or dampRatio_is_invalid or dampCoeff_is_invalid or x0_is_invalid or F0_is_invalid or wlim_is_invalid):
-        is_invalid = True;
-
-    return is_invalid
-
-
-
-def validate_all_inputsVI(mass_input, springConst_input, dampRatio_input, dampCoeff_input, forceAmp_input, wlim_input):
+# This is for the Forced Vibrations module
+def validate_all_inputsFV(mass_input, springConst_input, dampRatio_input, dampCoeff_input, initialDisplacement_input, forceAmp_input, wAxisLimit_input):
 
     is_invalid = False
 
@@ -123,16 +106,37 @@ def validate_all_inputsVI(mass_input, springConst_input, dampRatio_input, dampCo
     err_string, k_is_invalid = validate_input("spring constant", springConst_input, step=0.001, min=0.001)
     err_string, dampRatio_is_invalid = validate_input("damping ratio", dampRatio_input, step=0.001, min=0, max=2)
     err_string, dampCoeff_is_invalid = validate_input("damping coefficient", dampCoeff_input, step=0.001, min=0)
+    err_string, x0_is_invalid = validate_input("initial displacement", initialDisplacement_input, step=0.001, min=-10, max=10)
     err_string, F0_is_invalid = validate_input("force amplitude", forceAmp_input, step=0.1, min=-10000, max=10000)
-    err_string, wlim_is_invalid = validate_input("w axis limit", wlim_input, step=0.1, min=0.1, max=10000)
+    err_string, wAxisLimit_is_invalid = validate_input("w axis limit", wAxisLimit_input, step=0.1, min=0.1, max=10000)
 
-    if(mass_is_invalid or k_is_invalid or dampRatio_is_invalid or dampCoeff_is_invalid or F0_is_invalid or wlim_is_invalid):
+    if(mass_is_invalid or k_is_invalid or dampRatio_is_invalid or dampCoeff_is_invalid or x0_is_invalid or F0_is_invalid or wAxisLimit_is_invalid):
         is_invalid = True;
 
     return is_invalid
 
 
-def validate_all_inputsBE(mass_input, springConst_input, dampRatio_input, dampCoeff_input, baseAmp_input, wlim_input):
+# This is for the Vibrations Isolation module
+def validate_all_inputsVI(mass_input, springConst_input, dampRatio_input, dampCoeff_input, forceAmp_input, wAxisLimit_input):
+
+    is_invalid = False
+
+    # PLEASE ENSURE THAT THE "step", "min", and "max" are correct for their respective inputs!!!
+    err_string, mass_is_invalid = validate_input("mass", mass_input, step=0.001, min=0.001)
+    err_string, k_is_invalid = validate_input("spring constant", springConst_input, step=0.001, min=0.001)
+    err_string, dampRatio_is_invalid = validate_input("damping ratio", dampRatio_input, step=0.001, min=0, max=2)
+    err_string, dampCoeff_is_invalid = validate_input("damping coefficient", dampCoeff_input, step=0.001, min=0)
+    err_string, F0_is_invalid = validate_input("force amplitude", forceAmp_input, step=0.1, min=-10000, max=10000)
+    err_string, wAxisLimit_is_invalid = validate_input("w axis limit", wAxisLimit_input, step=0.1, min=0.1, max=10000)
+
+    if(mass_is_invalid or k_is_invalid or dampRatio_is_invalid or dampCoeff_is_invalid or F0_is_invalid or wAxisLimit_is_invalid):
+        is_invalid = True;
+
+    return is_invalid
+
+
+# This is for the Base Excitation module
+def validate_all_inputsBE(mass_input, springConst_input, dampRatio_input, dampCoeff_input, baseAmp_input, wAxisLimit_input):
 
     is_invalid = False
 
@@ -142,9 +146,9 @@ def validate_all_inputsBE(mass_input, springConst_input, dampRatio_input, dampCo
     err_string, dampRatio_is_invalid = validate_input("damping ratio", dampRatio_input, step=0.001, min=0, max=2)
     err_string, dampCoeff_is_invalid = validate_input("damping coefficient", dampCoeff_input, step=0.001, min=0)
     err_string, y0_is_invalid = validate_input("base amplitude", baseAmp_input, step=0.001, min=-10, max=10)
-    err_string, wlim_is_invalid = validate_input("w axis limit", wlim_input, step=0.1, min=0.1, max=10000)
+    err_string, wAxisLimit_is_invalid = validate_input("w axis limit", wAxisLimit_input, step=0.1, min=0.1, max=10000)
 
-    if(mass_is_invalid or k_is_invalid or dampRatio_is_invalid or dampCoeff_is_invalid or y0_is_invalid or wlim_is_invalid):
+    if(mass_is_invalid or k_is_invalid or dampRatio_is_invalid or dampCoeff_is_invalid or y0_is_invalid or wAxisLimit_is_invalid):
         is_invalid = True;
 
     return is_invalid
@@ -188,9 +192,9 @@ def validate_aliasing(m, k, tSpan, nPts):
             html.Br(),"We recommend increasing the number of points beyond " + str(np.ceil(nPts_recommended)) + " points."
                             ]
     else:
+        # Leave blank
         aliasing_warning = ""
 
-    #print(aliasing_warning)
 
     return aliasing_warning
 
@@ -207,7 +211,3 @@ def validate_aliasing(m, k, tSpan, nPts):
 # print("Is it Invalid?",is_invalid)
 # print(err)
 
-import plotly.express as px
-
-# df = px.data.gapminder().query("continent=='Oceania'")
-# print(df)

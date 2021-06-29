@@ -35,7 +35,10 @@ damp_switch = dbc.FormGroup(
     ]
 )
 
-# ================== ALL POPOVER COMPONENTS
+''' The Following are the all the popover components. 
+They consist of the blue ? button, The popover itself with the header and the validation message 
+telling the user why/why not the current input is valid'''
+
 mass_popover = html.Div(
     [
         dbc.Button(
@@ -122,24 +125,26 @@ baseAmp_popover = html.Div(
     ],
 )
 
-wlim_popover = html.Div(
+wAxisLimit_popover = html.Div(
     [
         dbc.Button(
-            "?", id="wlim-popover-target-BE", color="info",
+            "?", id="wAxisLimit-popover-target-BE", color="info",
         ),
         dbc.Popover(
             [
                 dbc.PopoverHeader("ω axis limit Input"),
-                dbc.PopoverBody([], id="wlim_validation_message-BE"),
+                dbc.PopoverBody([], id="wAxisLimit_validation_message-BE"),
             ],
-            id="wlim_popover-BE",
+            id="wAxisLimit_popover-BE",
             is_open=False,
-            target="wlim-popover-target-BE",
+            target="wAxisLimit-popover-target-BE",
         ),
     ],
 )
 
-line1_input = dbc.Row([
+
+''' This is the set of inputs for the 1st system. It was done like this to accommodate multiple system inputs.'''
+system1_input = dbc.Row([
 
     dbc.Col(
         html.Img(src=app.get_asset_url('BaseExcitation.png'),
@@ -181,8 +186,9 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Damping Ratio, ζ", addon_type="prepend"),
-                    dbc.Input(id="dampRatio-BE", placeholder="", debounce=True, type="number", value=0.1, min=0, max=2,
-                              step=0.001),
+                    dbc.Input(id="dampRatio-BE", placeholder="", 
+                              debounce=True, type="number", 
+                              value=0.1, min=0, max=2, step=0.001),
                     dbc.InputGroupAddon(
                         dampRatio_popover,
                         addon_type="append"
@@ -192,7 +198,9 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Damping Coefficient, c (Ns/m)", addon_type="prepend"),
-                    dbc.Input(id="c-BE", placeholder="Ns/m", debounce=True, type="number", value=1, min=0, step=0.001),
+                    dbc.Input(id="c-BE", placeholder="Ns/m", 
+                              debounce=True, type="number", 
+                              value=1, min=0, step=0.001),
                     dbc.InputGroupAddon(
                         dampCoeff_popover,
                         addon_type="append"
@@ -206,8 +214,9 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("Base Amplitude, y0 (m)", addon_type="prepend"),
-                    dbc.Input(id="y0-BE", placeholder="m", debounce=True, type="number", value=0.1, min=-10, max=10,
-                              step=0.001),
+                    dbc.Input(id="y0-BE", placeholder="m", 
+                              debounce=True, type="number", 
+                              value=0.1, min=-10, max=10, step=0.001),
                     dbc.InputGroupAddon(
                         baseAmp_popover,
                         addon_type="append"
@@ -221,10 +230,11 @@ line1_input = dbc.Row([
             dbc.Col(dbc.InputGroup(
                 [
                     dbc.InputGroupAddon("ω axis limit , ω (Hz)", addon_type="prepend"),
-                    dbc.Input(id="wlim-BE", placeholder="s", debounce=True, type="number", value=40, min=0.1, max=10000,
-                              step=0.1),
+                    dbc.Input(id="wAxisLimit-BE", placeholder="s", 
+                              debounce=True, type="number", 
+                              value=40, min=0.1, max=10000, step=0.1),
                     dbc.InputGroupAddon(
-                        wlim_popover,
+                        wAxisLimit_popover,
                         addon_type="append"
                     )
                 ],
@@ -238,10 +248,12 @@ line1_input = dbc.Row([
 
 ], className="jumbotron")
 
+
+'''This is where the layout is formed from the components. Note the plots/graph components are defined here.'''
 layout = dbc.Container([
     header,
     about_Text,
-    line1_input,
+    system1_input,
     html.H3("FRF and Time history plot of your desired base excitation frequency", className=" mt-1 mb-1 text-center"),
     html.H4("Please choose a excitation frequency using the slider below", className=" mt-1 mb-1 text-center"),
     dbc.Row([
@@ -280,16 +292,14 @@ layout = dbc.Container([
 ], fluid=True)
 
 
-# # THIS IS A PLACEHOLDER FOR BETA RELEASE - COMING SOON PAGE!!! ============================================================
-# layout = dbc.Container([
-#     html.H3('base Vibration', className=" mt-2, text-center"),
-#     html.H6("This module is currently under development. Do come back at a later date.",className=" mt-2, text-center" ),
-# ], fluid=True)
 
 
 # ALL APP CALLBACKS
+'''Here are all the app callbacks used. Note it is important that the id matches up to the Output/Input name'''
 
-# INPUT VALIDATORS
+# ALL INPUT VALIDATORS and popover functions
+# Each input has it's own validator passing in it's desired values to be checked against.
+# They also have their own popover toggle function
 @app.callback(
     Output("mass_validation_message-BE", "children"),
     Output("mass-popover-target-BE", "n_clicks"),
@@ -304,6 +314,7 @@ def mass_input_validator(mass_input):
 
 
 # Toggle mass popover with button (or validator callback above!!)
+# Note the n_clicks is set as an Input to ensure updating if changed
 @app.callback(
     Output("mass_popover-BE", "is_open"),
     [Input("mass-popover-target-BE", "n_clicks")],
@@ -406,7 +417,7 @@ def baseAmp_input_validator(baseAmp_input):
         return err_string, 0  # Set nclicks to 0 to prevent popover
 
 
-# Toggle initDisp popover with button (or validator callback above!!)
+# Toggle initialDisplacement popover with button (or validator callback above!!)
 @app.callback(
     Output("baseAmp_popover-BE", "is_open"),
     [Input("baseAmp-popover-target-BE", "n_clicks")],
@@ -421,25 +432,25 @@ def baseAmp_toggle_popover(n, is_open):
 ######### w x-axis limit VALIDATOR #########################
 
 @app.callback(
-    Output("wlim_validation_message-BE", "children"),
-    Output("wlim-popover-target-BE", "n_clicks"),
-    Input("wlim-BE", "value")
+    Output("wAxisLimit_validation_message-BE", "children"),
+    Output("wAxisLimit-popover-target-BE", "n_clicks"),
+    Input("wAxisLimit-BE", "value")
 )
-def wlim_input_validator(wlim_input):
-    err_string, is_invalid = validate_input("ω axis limit ", wlim_input, step=0.1, min=0.1, max=10000)
+def wAxisLimit_input_validator(wAxisLimit_input):
+    err_string, is_invalid = validate_input("ω axis limit ", wAxisLimit_input, step=0.1, min=0.1, max=10000)
     if is_invalid:
         return err_string, 1  # Set nclicks to 1 to call popover toggle
     else:
         return err_string, 0  # Set nclicks to 0 to prevent popover
 
 
-# Toggle wlim popover with button (or validator callback above!!)
+# Toggle wAxisLimit popover with button (or validator callback above!!)
 @app.callback(
-    Output("wlim_popover-BE", "is_open"),
-    [Input("wlim-popover-target-BE", "n_clicks")],
-    [State("wlim_popover-BE", "is_open")],
+    Output("wAxisLimit_popover-BE", "is_open"),
+    [Input("wAxisLimit-popover-target-BE", "n_clicks")],
+    [State("wAxisLimit_popover-BE", "is_open")],
 )
-def wlim_toggle_popover(n, is_open):
+def wAxisLimit_toggle_popover(n, is_open):
     if n:
         return not is_open
     return is_open
@@ -504,16 +515,16 @@ def update_damping_ratio(dampRatio_disabled, dampRatio, c, k, m):
               State('dampRatio-BE', 'value'),
               State('c-BE', 'value'),
               State('y0-BE', 'value'),
-              State('wlim-BE', 'value'),
+              State('wAxisLimit-BE', 'value'),
               )
-def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, y0, wlim):
+def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, y0, wAxisLimit):
     dampRatios = [dampRatio]
     tend = 1  # So doesn't flag validator
 
-    # This is to change slider limits according to wlim
+    # This is to change slider limits according to wAxisLimit
     slider_marks = {
                        0: '0 Hz',
-                       wlim: str(wlim) + ' Hz',
+                       wAxisLimit: str(wAxisLimit) + ' Hz',
                    },
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -538,7 +549,7 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, y0, wlim
     fig.update_yaxes(title_text="T = x0/y0 (-)", secondary_y=False)
     fig.update_yaxes(title_text="Phase (Degrees)", secondary_y=True, showgrid=False)
 
-    is_invalid = validate_all_inputsBE(m, k, dampRatio, dampCoeff, y0, wlim)
+    is_invalid = validate_all_inputsBE(m, k, dampRatio, dampCoeff, y0, wAxisLimit)
 
     if (is_invalid):
         w_slider_value = 0 # Set to 0 so can empty time history plot!
@@ -554,9 +565,9 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, y0, wlim
         input_warning_string = ["Graph was cleared!", html.Br(),
                                 "Please check your inputs before Submitting again!"]
         system_params = [""]
-        return fig, input_warning_string, system_params, wlim, slider_marks[0], w_slider_value
+        return fig, input_warning_string, system_params, wAxisLimit, slider_marks[0], w_slider_value
     else:
-        Tamp, phase, r, w, wn, wnHz, wd, wdHz = MotionTransmissibility_Solver(m, k, dampRatios, wlim, wantNormalised=False)
+        Tamp, phase, r, w, wn, wnHz, wd, wdHz = MotionTransmissibility_Solver(m, k, dampRatios, wAxisLimit, wantNormalised=False)
         # print(w)
         # print(amp[0])
 
@@ -593,10 +604,10 @@ def update_output(n_clicks, w_slider_value, m, k, dampRatio, dampCoeff, y0, wlim
                          "Natural Frequency, ωn (Hz): " + str(wnHz) + " Hz", html.Br(),
                          ] + dampedNatFreq_string
 
-    return fig, input_warning_string, system_params, wlim, slider_marks[0], w_slider_value
+    return fig, input_warning_string, system_params, wAxisLimit, slider_marks[0], w_slider_value
 
 
-def MotionTransmissibility_Solver(m=10, k=10, dampRatios=[0.25], wlim=50, wantNormalised=False):
+def MotionTransmissibility_Solver(m=10, k=10, dampRatios=[0.25], wAxisLimit=50, wantNormalised=False):
     wn = np.sqrt(k / m)  # Natural Freq of spring mass system
     wnHz = wn / (2 * np.pi)  # Natural freq in Hz
     if 0 < dampRatios[0] < 1:
@@ -606,7 +617,7 @@ def MotionTransmissibility_Solver(m=10, k=10, dampRatios=[0.25], wlim=50, wantNo
         wd = 0
         wdHz = 0
 
-    wHz_axis = np.linspace(0, wlim, 1000)  # SET LIMIT HERE FOR X AXIS!!!
+    wHz_axis = np.linspace(0, wAxisLimit, 1000)  # SET LIMIT HERE FOR X AXIS!!!
     w = wHz_axis*2*np.pi
     r = w / wn
 
