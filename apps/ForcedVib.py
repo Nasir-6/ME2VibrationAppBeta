@@ -144,7 +144,7 @@ forceAmp_popover = html.Div(
 wAxisLimit_popover = html.Div(
     [
         dbc.Button(
-            "?", id="wAxisLim-popover-target-FV", color="info",
+            "?", id="wAxisLimit-popover-target-FV", color="info",
         ),
         dbc.Popover(
             [
